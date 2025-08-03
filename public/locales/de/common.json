@@ -1,0 +1,61 @@
+{
+  "auth": {
+    "signin": "Anmelden",
+    "signin-description": "Geben Sie Ihre Anmeldedaten ein, um auf Ihr Konto zuzugreifen",
+    "email": "E-Mail",
+    "email-placeholder": "Geben Sie Ihre E-Mail ein",
+    "password": "Passwort",
+    "password-placeholder": "Geben Sie Ihr Passwort ein",
+    "login": "Anmelden",
+    "logging-in": "Anmeldung läuft...",
+    "login-success": "Erfolgreich angemeldet",
+    "login-error": "Anmeldung fehlgeschlagen",
+    "forgot-password-question": "Passwort vergessen?",
+    "reset-password": "Passwort zurücksetzen",
+    "password-empty": "Passwort darf nicht leer sein",
+    "save-password-success": "Passwort wurde erfolgreich zurückgesetzt",
+    "save-password-error": "Fehler beim Zurücksetzen des Passworts",
+    "signup": "Registrieren",
+    "email-verification": {
+      "title": "E-Mail-Verifizierung",
+      "verifying": "Ihre E-Mail wird verifiziert...",
+      "success": "Ihre E-Mail wurde erfolgreich verifiziert!",
+      "error": "E-Mail-Verifizierung fehlgeschlagen",
+      "invalid-token": "Verifizierungslink ist ungültig. Verifizierungstoken fehlt.",
+      "expired-token": "Bei der Verifizierung Ihrer E-Mail ist ein Fehler aufgetreten. Der Link ist möglicherweise ungültig oder abgelaufen.",
+      "general-error": "E-Mail-Verifizierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "success-message": "Sie können sich jetzt mit Ihrer E-Mail und Ihrem Passwort anmelden.",
+      "sign-in": "Anmelden",
+      "go-to-sign-in": "Zur Anmeldeseite",
+      "resend-verification": "Verifizierungs-E-Mail erneut senden",
+      "resend-title": "Verifizierungs-E-Mail erneut senden",
+      "resend-description": "Geben Sie die E-Mail ein, die Sie für die Registrierung verwendet haben, um eine neue Verifizierungs-E-Mail zu erhalten",
+      "sending": "Wird gesendet...",
+      "send-email": "E-Mail senden",
+      "resend-success": "Verifizierungs-E-Mail wurde gesendet. Bitte überprüfen Sie Ihren Posteingang.",
+      "resend-error": "Fehler beim Senden der Verifizierungs-E-Mail. Bitte versuchen Sie es später erneut.",
+      "try-again": "Erneut versuchen",
+      "generic-success": "Wenn die E-Mail registriert ist, wird ein Verifizierungslink an sie gesendet",
+      "rate-limit": "Zu viele Anfragen. Bitte versuchen Sie es später erneut."
+    }
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "patients": "Patienten",
+    "appointments": "Termine",
+    "settings": "Einstellungen",
+    "logout": "Abmelden"
+  },
+  "common": {
+    "loading": "Wird geladen...",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "view": "Ansehen",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "sort": "Sortieren",
+    "actions": "Aktionen"
+  }
+}

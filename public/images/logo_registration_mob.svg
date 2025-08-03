@@ -1,0 +1,8 @@
+<svg width="270" height="20" viewBox="0 0 270 40" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .text { font-family: 'Segoe UI', sans-serif; font-size: 28px; fill: #6e6e6e; letter-spacing: 2px; }
+    .dot { fill: #6e6e6e; }
+  </style>
+  <circle class="dot" cx="10" cy="10" r="4" />
+  <text class="text" x="20" y="28">Nexa Dental CRM</text>
+</svg>
