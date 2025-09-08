@@ -2,48 +2,121 @@ import { AuthError } from "@models/error.model";
 import z from "zod";
 /**
  * Interface for the authentication state in Redux store
+ * Updated for secure architecture: access token in Redux memory, refresh token in HttpOnly cookies
  */
 export interface AuthState {
   /** ID of the authenticated user */
   userId: string | null;
-  /** JWT token for authentication */
-  token: string | null;
+  /** Access token for API requests (stored in Redux memory, not cookies) */
+  accessToken: string | null;
   /** Whether the user is currently authenticated */
   isAuthenticated: boolean;
   /** Current error state, if any */
   error: AuthError | null;
   /** Timestamp of last successful login */
   lastLogin: string | null;
-  /** Timestamp when the current session expires */
-  sessionExpiry: string | null;
   /** Number of failed login attempts */
   loginAttempts: number;
-  /** Checkbox state for remember me */
-  rememberMe: boolean;
+  /** Whether token refresh is in progress */
+  isRefreshing: boolean;
+  /** User information */
+  user: {
+    /** User ID */
+    userId: string;
+    /** User email */
+    email: string;
+    /** First name */
+    firstName: string;
+    /** Last name */
+    lastName: string;
+    /** Organization ID */
+    organizationId: string;
+    /** User role */
+    role: string;
+  } | null;
 }
 
 /**
  * Interface for login response from the API
+ * Updated for secure architecture: refresh token only in HttpOnly cookies
  */
 export interface LoginResponse {
-  /** JWT token for authentication */
-  jwt: string;
-  /** User ID of the authenticated user */
-  user_id: string;
+  /** Access token for authentication (15 min lifetime) */
+  accessToken: string;
+  /** Success status */
+  success: boolean;
+  /** Response message */
+  message: string;
+  /** User information */
+  user: {
+    /** User ID */
+    userId: string;
+    /** User email */
+    email: string;
+    /** First name */
+    firstName: string;
+    /** Last name */
+    lastName: string;
+    /** Organization ID */
+    organizationId: string;
+    /** User role */
+    role: string;
+  };
+  /** Error information (optional) */
+  error?: {
+    code?: string;
+    message?: string;
+  };
 }
 
 /**
  * Interface for JWT payload structure
+ * Updated for new backend JWT format
+ * Based on RFC 7519 and OWASP JWT Security Cheat Sheet
  */
 export interface JWTPayload {
-  /** Token expiration timestamp */
-  exp: number;
-  /** Token issuer */
+  /** User ID (subject) - required */
+  sub: string;
+  /** JWT ID for blacklisting - required */
+  jti: string;
+  /** Token issuer - required */
   iss: string;
-  /** User roles array */
-  roles: string[] | null;
-  /** User ID from token */
-  userId: string;
+  /** Token audience - required */
+  aud: string;
+  /** Security fingerprint - required */
+  fingerprint: string;
+  /** Token issued at timestamp - required */
+  iat: number;
+  /** Token expiration timestamp - required */
+  exp: number;
+  /** Token not valid before timestamp - required */
+  nbf: number;
+  /** Token type (for refresh tokens) - optional */
+  type?: "refresh";
+}
+
+/**
+ * Interface for refresh token response from the API
+ * Updated for secure architecture: refresh token only in HttpOnly cookies with rotation
+ */
+export interface RefreshResponse {
+  /** New access token (15 min lifetime) */
+  accessToken: string;
+  /** User information */
+  user: {
+    /** User ID */
+    userId: string;
+    /** User email */
+    email: string;
+    /** First name */
+    firstName: string;
+    /** Last name */
+    lastName: string;
+    /** Organization ID */
+    organizationId: string;
+    /** User role */
+    role: string;
+  };
 }
 
 export interface RegisterFormValues {

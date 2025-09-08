@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { motion } from "framer-motion";
-
+import { ROUTES } from "@/constants/routes";
 export const RegisterPresentation = () => {
   const { t } = useTranslation();
   const [isMobile, setIsMobile] = useState(false);
@@ -80,7 +80,7 @@ export const RegisterPresentation = () => {
           )}
           variants={itemVariants}
         >
-          <Link href="/" className="flex items-center gap-3">
+          <Link href={ROUTES.home} className="flex items-center gap-3">
             <div className="relative h-auto flex-shrink-0 flex items-center">
               <Image
                 src={

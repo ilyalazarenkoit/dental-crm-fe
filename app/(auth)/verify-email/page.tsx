@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Warning } from "@phosphor-icons/react";
+import { ROUTES } from "@/constants/routes";
 
 export default function VerifyEmailPage() {
   const { t } = useTranslation();
@@ -130,7 +131,10 @@ export default function VerifyEmailPage() {
                   {t("auth.email-verification.success-message")}
                 </p>
               </div>
-              <Button onClick={() => router.push("/login")} className="w-full">
+              <Button
+                onClick={() => router.push(ROUTES.signin)}
+                className="w-full"
+              >
                 {t("auth.email-verification.sign-in")}
               </Button>
             </motion.div>
@@ -155,12 +159,12 @@ export default function VerifyEmailPage() {
               </div>
               <div className="w-full space-y-2 flex flex-col gap-2">
                 <Button
-                  onClick={() => router.push("/login")}
+                  onClick={() => router.push(ROUTES.signin)}
                   className="w-full"
                 >
                   {t("auth.email-verification.go-to-sign-in")}
                 </Button>
-                <Link href="/resend-verification">
+                <Link href={ROUTES.resendVerification}>
                   <Button variant="outline" className="w-full">
                     {t("auth.email-verification.resend-verification")}
                   </Button>

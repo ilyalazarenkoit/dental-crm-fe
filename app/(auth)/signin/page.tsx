@@ -2,63 +2,66 @@
 
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
-import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { selectIsAuthenticated } from "@store/features/authSlice";
-import { useSelector, useDispatch } from "react-redux";
-import { resetPasswordRecoveryLocalStorage } from "@store/features/passwordRecoverySlice";
+import { useSearchParams } from "next/navigation";
+
 import { ROUTES } from "@constants/routes";
-import { BrandIdentity } from "@components/auth/BrandIdentity";
+import { RegisterPresentation } from "@components/auth/register/RegisterPresentation";
 import { LoginForm } from "@components/auth/LoginForm";
+
+import { motion } from "framer-motion";
 
 export default function SignIn() {
   const { t } = useTranslation();
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-  const dispatch = useDispatch();
 
-  // Get the callback URL from the search params (for redirection after login)
   const callbackUrl = searchParams.get("callbackUrl") || ROUTES.home;
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      // If user is already authenticated, redirect to the callback URL or dashboard
-      router.push(decodeURI(callbackUrl));
-    }
-
-    // Reset password recovery state when visiting signin page
-    dispatch(resetPasswordRecoveryLocalStorage());
-  }, [isAuthenticated, router, dispatch, callbackUrl]);
-
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6">
-      <div className="w-full max-w-md space-y-8">
-        <BrandIdentity />
+    <div className="min-h-screen flex flex-col md:flex-row">
+      {/* Left side - presentation */}
+      <RegisterPresentation />
 
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <div className="mb-6 space-y-2 text-center">
-            <h1 className="text-2xl font-bold">{t("auth.signin")}</h1>
-            <p className="text-muted-foreground">
-              {t("auth.signin-description")}
-            </p>
-          </div>
+      {/* Right side - Form */}
+      <motion.div
+        className="w-full md:w-1/2 flex flex-col justify-center items-center p-4 sm:p-6 md:p-8 lg:p-12 min-h-screen md:min-h-0 md:flex-1"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+      >
+        <div className="w-full max-w-md">
+          <h1 className="text-3xl text-center font-bold mb-4">
+            {t("auth.signin")}
+          </h1>
 
-          <LoginForm callbackUrl={callbackUrl} />
+          <div className="bg-white rounded-lg shadow-md p-6 py-4 sm:p-8 sm:py-6">
+            <LoginForm callbackUrl={callbackUrl} />
 
-          <div className="mt-6 text-center text-sm">
-            <p>
-              {t("auth.forgot-password-question")}{" "}
-              <Link
-                href={ROUTES.recovery}
-                className="font-medium text-primary hover:underline"
-              >
-                {t("auth.reset-password")}
-              </Link>
-            </p>
+            <div className="mt-6 text-center text-sm text-gray-600">
+              <p>
+                {t("auth.forgot-password-question")}{" "}
+                <Link
+                  href={ROUTES.recovery}
+                  className="font-medium text-primary hover:text-primary/90 transition-colors"
+                >
+                  {t("auth.reset-password")}
+                </Link>
+              </p>
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+              <p className="text-sm text-gray-600">
+                {t("auth.dont-have-account", "Don't have an account?")}{" "}
+                <Link
+                  href={ROUTES.register}
+                  className="font-medium text-primary hover:text-primary/90 transition-colors"
+                >
+                  {t("auth.signup")}
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

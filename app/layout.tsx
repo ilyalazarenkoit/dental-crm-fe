@@ -1,23 +1,29 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
+
 import { Providers } from "@app/providers";
 import { AuthInitializer } from "@components/auth/AuthInitializer";
 import { ToastWrapper } from "keep-react";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "Nexa",
   description: "AI powered dental CRM",
+  icons: {
+    icon: [
+      { url: "/images/favicon.png", sizes: "96x96", type: "image/png" },
+      { url: "/images/favicon.svg", sizes: "any", type: "image/svg+xml" },
+    ],
+    shortcut: "/images/favicon.png",
+    apple: "/images/favicon.png",
+  },
 };
 
 export default function RootLayout({
@@ -27,9 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${inter.variable} antialiased font-sans`}>
         <Providers>
           <AuthInitializer />
           {children}

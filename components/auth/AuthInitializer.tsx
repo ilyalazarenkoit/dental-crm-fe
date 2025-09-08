@@ -6,7 +6,6 @@ import { initializeAuth } from "@store/features/authSlice";
 
 export function AuthInitializer() {
   const dispatch = useDispatch();
-
   useEffect(() => {
     dispatch(initializeAuth());
   }, [dispatch]);

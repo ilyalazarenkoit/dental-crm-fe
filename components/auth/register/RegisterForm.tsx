@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "keep-react";
-import { Eye, EyeSlash, SpinnerGap } from "phosphor-react";
+import { Eye, EyeSlash, SpinnerGap, CheckCircle } from "phosphor-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,6 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Progress } from "@/components/ui/progress";
 import { ROUTES } from "@/constants/routes";
 import { registerSchema, defaultRegistrationValues } from "@/models/auth.model";
 import { useEmailValidation } from "@/hooks/useEmailValidation";
@@ -26,19 +27,11 @@ import { useEmailInput } from "@/hooks/useEmailInput";
 import { usePhoneInput } from "@/hooks/usePhoneInput";
 import { usePasswordValidation } from "@/hooks/usePasswordValidation";
 import { PasswordRequirements } from "@components/ui/password-requirements";
-import { AnimatePresence, motion } from "framer-motion";
+import { AuthErrorDisplay } from "@components/auth/AuthErrorDisplay";
 import { FullScreenLoader } from "@components/ui/full-screen-loader";
 import { EmailVerificationNotice } from "@components/auth/register/EmailVerificationNotice";
 import { AuthService } from "@lib/api/auth.service";
 import { handleApiResponse } from "@/lib/error-handler";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-
-// Validation schema using Zod
-
-registerSchema.refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -51,36 +44,113 @@ export const RegisterForm = () => {
   const [registrationComplete, setRegistrationComplete] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
+  const [formProgress, setFormProgress] = useState(0);
+  const [hasValidatedEmail, setHasValidatedEmail] = useState(false);
 
   // Initialize form with react-hook-form and zod validation
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: defaultRegistrationValues,
-    mode: "onTouched", // Enable validation on change
+    mode: "onTouched",
   });
 
-  // Get current email value from form
-  const emailValue = form.watch("email");
+  // Watch form values for progress calculation
+  const watchedValues = form.watch();
+  const {
+    email,
+    password,
+    confirmPassword,
+    firstName,
+    lastName,
+    mobilePhone,
+    organizationName,
+  } = watchedValues;
 
-  // Get password values from form
-  const passwordValue = form.watch("password");
-  const confirmPasswordValue = form.watch("confirmPassword");
+  // Custom hooks
+  const emailInput = useEmailInput(email);
+  const phoneInput = usePhoneInput(mobilePhone);
+  const passwordValidation = usePasswordValidation(password);
+  const { validationState, validateOnBlur } = useEmailValidation(email);
+  const { isValid: passwordsMatch, errorMessage: passwordMatchError } =
+    usePasswordConfirmation(password, confirmPassword);
 
-  // Custom email input handling
-  const emailInput = useEmailInput(emailValue);
+  const { isValid, isChecking, errorMessage } = validationState;
 
-  // Custom phone input handling
-  const phoneInput = usePhoneInput(form.watch("mobilePhone"));
-
-  // Password validation
-  const passwordValidation = usePasswordValidation(passwordValue);
-
-  // Update form values when our custom inputs change
+  // Track when email validation is complete (after blur or validation)
   useEffect(() => {
-    if (emailInput.value !== emailValue) {
+    if (email && email.trim().length > 0 && !isChecking) {
+      setHasValidatedEmail(true);
+    }
+  }, [email, isChecking]);
+
+  // Calculate form completion progress based on VALID fields only
+  useEffect(() => {
+    const fieldValidations = [
+      // First name - valid if not empty and no errors
+      firstName &&
+        firstName.trim().length > 0 &&
+        !form.formState.errors.firstName,
+      // Last name - valid if not empty and no errors
+      lastName && lastName.trim().length > 0 && !form.formState.errors.lastName,
+      // Email - valid if validation is complete AND email is actually valid
+      hasValidatedEmail &&
+        email &&
+        email.trim().length > 0 &&
+        !isChecking &&
+        isValid &&
+        !errorMessage &&
+        !form.formState.errors.email &&
+        emailInput.value === email &&
+        email.includes("@") && // Basic email format check
+        email.includes(".") && // Basic email format check
+        email.length > 5, // Minimum reasonable email length
+      // Password - valid if meets all requirements AND user has actually typed something
+      password &&
+        password.length > 0 &&
+        passwordValidation.isValid &&
+        !form.formState.errors.password,
+      // Confirm password - valid if matches password AND user has actually typed something
+      passwordsMatch &&
+        confirmPassword &&
+        confirmPassword.length > 0 &&
+        !form.formState.errors.confirmPassword,
+      // Mobile phone - valid if not empty and no errors
+      mobilePhone &&
+        mobilePhone.trim().length > 0 &&
+        !form.formState.errors.mobilePhone,
+      // Organization name - valid if not empty and no errors
+      organizationName &&
+        organizationName.trim().length > 0 &&
+        !form.formState.errors.organizationName,
+    ];
+
+    const validFields = fieldValidations.filter(Boolean).length;
+    const progress = Math.round((validFields / fieldValidations.length) * 100);
+    setFormProgress(progress);
+  }, [
+    firstName,
+    lastName,
+    email,
+    password,
+    confirmPassword,
+    mobilePhone,
+    organizationName,
+    isValid,
+    isChecking,
+    errorMessage,
+    passwordValidation.isValid,
+    passwordsMatch,
+    form.formState.errors,
+    emailInput.value,
+    hasValidatedEmail,
+  ]);
+
+  // Update form values when custom inputs change
+  useEffect(() => {
+    if (emailInput.value !== email) {
       form.setValue("email", emailInput.value, { shouldValidate: false });
     }
-  }, [emailInput.value, emailValue, form]);
+  }, [emailInput.value, email, form]);
 
   useEffect(() => {
     form.setValue("mobilePhone", phoneInput.rawValue, {
@@ -88,21 +158,22 @@ export const RegisterForm = () => {
     });
   }, [phoneInput.rawValue, form]);
 
-  // Custom email validation with debounce
-  const { validationState, validateOnBlur } = useEmailValidation(emailValue);
-  const { isValid, isChecking, errorMessage } = validationState;
-
-  // Custom password confirmation validation with debounce
-  const { isValid: passwordsMatch, errorMessage: passwordMatchError } =
-    usePasswordConfirmation(passwordValue, confirmPasswordValue);
-
   // Handle form submission
   const onSubmit = async (data: RegisterFormValues) => {
     if (!isValid || isChecking) {
+      toast.error(
+        t(
+          "register.errors.email-validation",
+          "Please complete email validation"
+        )
+      );
       return;
     }
 
-    if (!passwordsMatch && confirmPasswordValue) {
+    if (!passwordsMatch && confirmPassword) {
+      toast.error(
+        t("register.errors.password-mismatch", "Passwords do not match")
+      );
       return;
     }
 
@@ -110,26 +181,16 @@ export const RegisterForm = () => {
     setFormError(null);
 
     try {
-      const {
-        firstName,
-        lastName,
-        email,
-        password,
-        mobilePhone,
-        organizationName,
-      } = data;
-
       const registerData = {
-        firstName,
-        lastName,
-        email,
-        password,
-        mobilePhone,
-        organizationName,
+        firstName: data.firstName.trim(),
+        lastName: data.lastName.trim(),
+        email: data.email.trim(),
+        password: data.password,
+        mobilePhone: data.mobilePhone.trim(),
+        organizationName: data.organizationName.trim(),
       };
 
       const response = await AuthService.register(registerData);
-
       const result = handleApiResponse(response, t, "register.errors");
 
       if (result.success) {
@@ -139,10 +200,19 @@ export const RegisterForm = () => {
       } else {
         setFormError(result.message || t("register.errors.default"));
 
+        // Focus on problematic field
         if (
           response.error?.code === "E409_USER_WITH_THIS_EMAIL_ALREADY_EXISTS"
         ) {
           form.setFocus("email");
+        } else if (response.error?.code === "E400_VALIDATION_ERROR") {
+          // Focus on first field with error
+          const firstErrorField = Object.keys(
+            form.formState.errors
+          )[0] as keyof RegisterFormValues;
+          if (firstErrorField) {
+            form.setFocus(firstErrorField);
+          }
         }
       }
     } catch (error) {
@@ -153,9 +223,7 @@ export const RegisterForm = () => {
     }
   };
 
-  const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
+  const clearError = () => setFormError(null);
 
   if (registrationComplete) {
     return (
@@ -176,94 +244,129 @@ export const RegisterForm = () => {
       />
 
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-1 h-3/4"
-        >
-          <AnimatePresence>
-            {formError && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Alert variant="destructive" className="mb-4">
-                  <AlertDescription>{formError}</AlertDescription>
-                </Alert>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {/* Progress Bar */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                {t("register.progress", "Form completion")}
+              </span>
+              <span className="font-medium">{formProgress}%</span>
+            </div>
+            <Progress value={formProgress} className="h-2" />
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {/* First Name */}
+          {/* Error Display */}
+          <AuthErrorDisplay
+            error={formError}
+            onClose={clearError}
+            variant="destructive"
+          />
+
+          {/* Name Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="firstName"
               render={({ field }) => (
-                <FormItem className="space-y-1">
-                  <FormLabel className="cursor-pointer">
+                <FormItem className="space-y-2">
+                  <FormLabel className="cursor-pointer text-sm font-medium">
                     {t("register.registration-form.first-name")}
                     <span className="text-red-500 ml-1">*</span>
                   </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t(
-                        "register.registration-form.first-name-placeholder"
+                  <div className="relative">
+                    <FormControl>
+                      <Input
+                        placeholder={t(
+                          "register.registration-form.first-name-placeholder"
+                        )}
+                        className={
+                          form.formState.errors.firstName
+                            ? "border-red-400 focus-visible:ring-red-400 pr-10"
+                            : "pr-10"
+                        }
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          // Trim whitespace on blur
+                          if (!e.target.value) return;
+                          const trimmed = e.target.value.trim();
+                          if (trimmed !== e.target.value) {
+                            field.onChange(trimmed);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    {/* Green checkmark for valid first name */}
+                    {firstName &&
+                      firstName.trim().length > 0 &&
+                      !form.formState.errors.firstName && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                          <CheckCircle className="h-5 w-5 text-green-500" />
+                        </div>
                       )}
-                      className={
-                        form.formState.errors.firstName
-                          ? "border-red-400 focus-visible:ring-red-400 focus-visible:ring-opacity-50 focus-visible:border-red-400"
-                          : ""
-                      }
-                      {...field}
-                    />
-                  </FormControl>
-                  <div className="min-h-[1.25em]">
-                    <FormMessage />
                   </div>
+                  <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Last Name */}
             <FormField
               control={form.control}
               name="lastName"
               render={({ field }) => (
-                <FormItem className="space-y-1">
-                  <FormLabel className="cursor-pointer">
+                <FormItem className="space-y-2">
+                  <FormLabel className="cursor-pointer text-sm font-medium">
                     {t("register.registration-form.last-name")}
                     <span className="text-red-500 ml-1">*</span>
                   </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t(
-                        "register.registration-form.last-name-placeholder"
+                  <div className="relative">
+                    <FormControl>
+                      <Input
+                        placeholder={t(
+                          "register.registration-form.last-name-placeholder"
+                        )}
+                        className={
+                          form.formState.errors.lastName
+                            ? "border-red-400 focus-visible:ring-red-400 pr-10"
+                            : "pr-10"
+                        }
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          if (!e.target.value) return;
+                          const trimmed = e.target.value.trim();
+                          if (trimmed !== e.target.value) {
+                            field.onChange(trimmed);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    {/* Green checkmark for valid last name */}
+                    {lastName &&
+                      lastName.trim().length > 0 &&
+                      !form.formState.errors.lastName && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                          <CheckCircle className="h-5 w-5 text-green-500" />
+                        </div>
                       )}
-                      className={
-                        form.formState.errors.lastName
-                          ? "border-red-400 focus-visible:ring-red-400 focus-visible:ring-opacity-50 focus-visible:border-red-400"
-                          : ""
-                      }
-                      {...field}
-                    />
-                  </FormControl>
-                  <div className="min-h-[1.25em]">
-                    <FormMessage />
                   </div>
+                  <FormMessage />
                 </FormItem>
               )}
             />
           </div>
 
-          {/* Email */}
+          {/* Email Field */}
           <FormField
             control={form.control}
             name="email"
             render={({ field }) => (
-              <FormItem className="space-y-0.5">
-                <FormLabel className="cursor-pointer" htmlFor="email-input">
+              <FormItem className="space-y-2">
+                <FormLabel
+                  className="cursor-pointer text-sm font-medium"
+                  htmlFor="email-input"
+                >
                   {t("register.registration-form.email")}
                   <span className="text-red-500 ml-1">*</span>
                 </FormLabel>
@@ -272,12 +375,10 @@ export const RegisterForm = () => {
                     <Input
                       id="email-input"
                       type="email"
-                      placeholder={t(
-                        "register.registration-form.email-placeholder"
-                      )}
+                      placeholder={t("register.registration-form.email")}
                       className={
                         errorMessage || form.formState.errors.email
-                          ? "pr-10 border-red-400 focus-visible:ring-red-400 focus-visible:ring-opacity-50 focus-visible:border-red-400"
+                          ? "pr-10 border-red-400 focus-visible:ring-red-400"
                           : "pr-10"
                       }
                       value={emailInput.value}
@@ -294,31 +395,39 @@ export const RegisterForm = () => {
                         <SpinnerGap className="h-5 w-5 text-gray-400 animate-spin" />
                       </div>
                     )}
+                    {/* Green checkmark for valid email */}
+                    {hasValidatedEmail &&
+                      email &&
+                      email.trim().length > 0 &&
+                      !isChecking &&
+                      isValid &&
+                      !errorMessage &&
+                      !form.formState.errors.email &&
+                      email.includes("@") && // Basic email format check
+                      email.includes(".") && // Basic email format check
+                      email.length > 5 && ( // Minimum reasonable email length
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                          <CheckCircle className="h-5 w-5 text-green-500" />
+                        </div>
+                      )}
                   </div>
                 </FormControl>
-                {/* Show custom error message from email validation */}
                 {errorMessage && !form.formState.errors.email ? (
-                  <div className="min-h-[1.25em]">
-                    <p className="text-[0.8rem] font-medium text-destructive">
-                      {errorMessage}
-                    </p>
-                  </div>
+                  <p className="text-sm text-destructive">{errorMessage}</p>
                 ) : (
-                  <div className="min-h-[1.25em]">
-                    <FormMessage />
-                  </div>
+                  <FormMessage />
                 )}
               </FormItem>
             )}
           />
 
-          {/* Password */}
+          {/* Password Field */}
           <FormField
             control={form.control}
             name="password"
             render={({ field }) => (
-              <FormItem className="space-y-1">
-                <FormLabel className="cursor-pointer">
+              <FormItem className="space-y-2">
+                <FormLabel className="cursor-pointer text-sm font-medium">
                   {t("register.registration-form.password")}
                   <span className="text-red-500 ml-1">*</span>
                 </FormLabel>
@@ -326,172 +435,209 @@ export const RegisterForm = () => {
                   <FormControl>
                     <Input
                       type={showPassword ? "text" : "password"}
-                      placeholder={t(
-                        "register.registration-form.password-placeholder"
-                      )}
+                      placeholder={t("register.registration-form.password")}
                       className={
                         form.formState.errors.password
-                          ? "border-red-400 focus-visible:ring-red-400 focus-visible:ring-opacity-50 focus-visible:border-red-400 pr-10"
-                          : "pr-10"
+                          ? "border-red-400 focus-visible:ring-red-400 pr-20"
+                          : "pr-20"
                       }
                       {...field}
                     />
                   </FormControl>
+                  {/* Green checkmark for valid password - positioned before the eye button */}
+                  {passwordValidation.isValid &&
+                    !form.formState.errors.password && (
+                      <div className="absolute inset-y-0 right-12 flex items-center">
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                      </div>
+                    )}
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 transition-colors"
                     tabIndex={-1}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                   >
                     {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
-                <div className="min-h-[1.25em]">
-                  <FormMessage />
-                </div>
-                {/* Password requirements component */}
-                <AnimatePresence>
-                  {passwordValue.length > 0 && (
-                    <PasswordRequirements
-                      hasMinLength={passwordValidation.hasMinLength}
-                      hasUppercase={passwordValidation.hasUppercase}
-                      hasNumber={passwordValidation.hasNumber}
-                      hasSpecialChar={passwordValidation.hasSpecialChar}
-                      strength={passwordValidation.strength}
-                      className="mt-2"
-                    />
-                  )}
-                </AnimatePresence>
-              </FormItem>
-            )}
-          />
+                <FormMessage />
 
-          {/* Confirm Password */}
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem className="space-y-0.5">
-                <FormLabel
-                  className="cursor-pointer"
-                  htmlFor="confirm-password-input"
-                >
-                  {t("register.registration-form.confirm-password")}
-                  <span className="text-red-500 ml-1">*</span>
-                </FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      id="confirm-password-input"
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder={t(
-                        "register.registration-form.confirm-password-placeholder"
-                      )}
-                      className={
-                        form.formState.errors.confirmPassword || !passwordsMatch
-                          ? "pr-10 border-red-400 focus-visible:ring-red-400 focus-visible:ring-opacity-50 focus-visible:border-red-400"
-                          : "pr-10"
-                      }
-                      {...field}
-                    />
-                    <button
-                      type="button"
-                      onClick={toggleConfirmPasswordVisibility}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    >
-                      {showConfirmPassword ? (
-                        <EyeSlash className="h-5 w-5 text-gray-400" />
-                      ) : (
-                        <Eye className="h-5 w-5 text-gray-400" />
-                      )}
-                    </button>
-                  </div>
-                </FormControl>
-                {/* Показываем либо сообщение от react-hook-form, либо от нашего кастомного хука */}
-                {form.formState.errors.confirmPassword ? (
-                  <div className="min-h-[1.25em]">
-                    <FormMessage />
-                  </div>
-                ) : (
-                  <div className="min-h-[1.25em]">
-                    {passwordMatchError &&
-                      confirmPasswordValue &&
-                      passwordsMatch === false && (
-                        <p className="text-[0.8rem] font-medium text-destructive">
-                          {passwordMatchError}
-                        </p>
-                      )}
-                  </div>
+                {/* Password Requirements */}
+                {password.length > 0 && (
+                  <PasswordRequirements
+                    hasMinLength={passwordValidation.hasMinLength}
+                    hasUppercase={passwordValidation.hasUppercase}
+                    hasNumber={passwordValidation.hasNumber}
+                    hasSpecialChar={passwordValidation.hasSpecialChar}
+                    strength={passwordValidation.strength}
+                    className="mt-3"
+                  />
                 )}
               </FormItem>
             )}
           />
 
-          {/* Mobile Phone */}
+          {/* Confirm Password Field */}
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem className="space-y-2">
+                <FormLabel
+                  className="cursor-pointer text-sm font-medium"
+                  htmlFor="confirm-password-input"
+                >
+                  {t("register.registration-form.confirm-password")}
+                  <span className="text-red-500 ml-1">*</span>
+                </FormLabel>
+                <div className="relative">
+                  <FormControl>
+                    <Input
+                      id="confirm-password-input"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder={t(
+                        "register.registration-form.confirm-password"
+                      )}
+                      className={
+                        form.formState.errors.confirmPassword || !passwordsMatch
+                          ? "border-red-400 focus-visible:ring-red-400 pr-20"
+                          : "pr-20"
+                      }
+                      {...field}
+                    />
+                  </FormControl>
+                  {/* Green checkmark for valid confirm password - positioned before the eye button */}
+                  {passwordsMatch &&
+                    confirmPassword &&
+                    !form.formState.errors.confirmPassword && (
+                      <div className="absolute inset-y-0 right-12 flex items-center">
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                      </div>
+                    )}
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    tabIndex={-1}
+                    aria-label={
+                      showConfirmPassword
+                        ? "Hide confirm password"
+                        : "Show confirm password"
+                    }
+                  >
+                    {showConfirmPassword ? (
+                      <EyeSlash className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-400" />
+                    )}
+                  </button>
+                </div>
+                {form.formState.errors.confirmPassword ? (
+                  <FormMessage />
+                ) : (
+                  passwordMatchError &&
+                  confirmPassword &&
+                  passwordsMatch === false && (
+                    <p className="text-sm text-destructive">
+                      {passwordMatchError}
+                    </p>
+                  )
+                )}
+              </FormItem>
+            )}
+          />
+
+          {/* Mobile Phone Field */}
           <FormField
             control={form.control}
             name="mobilePhone"
             render={({ field }) => (
-              <FormItem className="space-y-1">
-                <FormLabel className="cursor-pointer">
+              <FormItem className="space-y-2">
+                <FormLabel className="cursor-pointer text-sm font-medium">
                   {t("register.registration-form.mobile-phone")}
                   <span className="text-red-500 ml-1">*</span>
                 </FormLabel>
-                <FormControl>
-                  <Input
-                    type="tel"
-                    placeholder={t(
-                      "register.registration-form.mobile-phone-placeholder"
+                <div className="relative">
+                  <FormControl>
+                    <Input
+                      type="tel"
+                      placeholder={t("register.registration-form.mobile-phone")}
+                      className={
+                        form.formState.errors.mobilePhone
+                          ? "border-red-400 focus-visible:ring-red-400 pr-10"
+                          : "pr-10"
+                      }
+                      value={phoneInput.value}
+                      onChange={phoneInput.handleChange}
+                      onKeyDown={phoneInput.handleKeyDown}
+                      onBlur={field.onBlur}
+                    />
+                  </FormControl>
+                  {/* Green checkmark for valid mobile phone */}
+                  {mobilePhone &&
+                    mobilePhone.trim().length > 0 &&
+                    !form.formState.errors.mobilePhone && (
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                      </div>
                     )}
-                    className={
-                      form.formState.errors.mobilePhone
-                        ? "border-red-400 focus-visible:ring-red-400 focus-visible:ring-opacity-50 focus-visible:border-red-400"
-                        : ""
-                    }
-                    value={phoneInput.value}
-                    onChange={phoneInput.handleChange}
-                    onKeyDown={phoneInput.handleKeyDown}
-                    onBlur={field.onBlur}
-                  />
-                </FormControl>
-                <div className="min-h-[1.25em]">
-                  <FormMessage />
                 </div>
+                <FormMessage />
               </FormItem>
             )}
           />
 
-          {/* Organization Name */}
+          {/* Organization Name Field */}
           <FormField
             control={form.control}
             name="organizationName"
             render={({ field }) => (
-              <FormItem className="space-y-1">
-                <FormLabel className="cursor-pointer">
+              <FormItem className="space-y-2">
+                <FormLabel className="cursor-pointer text-sm font-medium">
                   {t("register.registration-form.organization-name")}
                   <span className="text-red-500 ml-1">*</span>
                 </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder={t(
-                      "register.registration-form.organization-name-placeholder"
+                <div className="relative">
+                  <FormControl>
+                    <Input
+                      placeholder={t(
+                        "register.registration-form.organization-name"
+                      )}
+                      className={
+                        form.formState.errors.organizationName
+                          ? "border-red-400 focus-visible:ring-red-400 pr-10"
+                          : "pr-10"
+                      }
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        if (!e.target.value) return;
+                        const trimmed = e.target.value.trim();
+                        if (trimmed !== e.target.value) {
+                          field.onChange(trimmed);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  {/* Green checkmark for valid organization name */}
+                  {organizationName &&
+                    organizationName.trim().length > 0 &&
+                    !form.formState.errors.organizationName && (
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                      </div>
                     )}
-                    className={
-                      form.formState.errors.organizationName
-                        ? "border-red-400 focus-visible:ring-red-400 focus-visible:ring-opacity-50 focus-visible:border-red-400"
-                        : ""
-                    }
-                    {...field}
-                  />
-                </FormControl>
-                <div className="min-h-[1.25em]">
-                  <FormMessage />
                 </div>
+                <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="pt-4">
+          {/* Submit Button */}
+          <div className="pt-2">
             <Button
               type="submit"
               className="w-full"
@@ -499,7 +645,8 @@ export const RegisterForm = () => {
                 isLoading ||
                 isChecking ||
                 !form.formState.isValid ||
-                !passwordsMatch
+                !passwordsMatch ||
+                !isValid
               }
             >
               {isLoading ? (

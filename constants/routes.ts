@@ -1,10 +1,10 @@
 enum ROUTES {
+  landing = "/",
   signin = "/signin",
   register = "/register",
   recovery = "/password-recovery",
   setPassword = "/set-password",
   passwordChanged = "/password-changed",
-  calendar = "/calendar",
   notFound = "/not-found",
   rateLimit = "/rate-limit-exceeded",
   resendVerification = "/resend-verification",
@@ -12,24 +12,30 @@ enum ROUTES {
 
   // sidebar routes
   home = "/home",
-  contacts = "/contacts",
-  distribution = "/distribution",
-  orders = "/orders",
-  accounting = "/accounting",
   scheduling = "/scheduling",
-  productManagement = "/product-management",
-  service = "/service",
+  patients = "/contacts",
+  cards = "/cards",
+
   management = "/management",
-  notifications = "/notifications",
+  analytics = "/analytics",
+
   profile = "/profile",
+  // accounting = "/accounting",
+  // distribution = "/distribution",
+  // orders = "/orders",
+
+  // productManagement = "/product-management",
+  // service = "/service",
+
+  // notifications = "/notifications",
 
   // startseite routes
-  tasks = "/tasks",
-  approvals = "/approvals",
-  evaluations = "/evaluations",
+  // tasks = "/tasks",
+  // approvals = "/approvals",
+  // evaluations = "/evaluations",
   // distribution routes
-  leads = "/leads",
-  deals = "/deals",
+  // leads = "/leads",
+  // deals = "/deals",
 }
 
 export { ROUTES };

@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { ROUTES } from "@constants/routes";
 
 // Define public routes that don't require authentication
+// These routes are accessible to everyone (including unauthenticated users)
 const PUBLIC_ROUTES = [
   ROUTES.signin,
   ROUTES.recovery,
@@ -15,7 +16,16 @@ const PUBLIC_ROUTES = [
 ];
 
 // Define routes that should redirect to dashboard if already authenticated
-const AUTH_ROUTES = [ROUTES.signin, ROUTES.recovery, ROUTES.setPassword];
+// These are auth-related pages that authenticated users shouldn't see
+const AUTH_ROUTES = [
+  ROUTES.signin,
+  ROUTES.recovery,
+  ROUTES.setPassword,
+  ROUTES.register,
+  ROUTES.resendVerification,
+  ROUTES.verifyEmail,
+  ROUTES.landing,
+];
 
 /**
  * Middleware function that runs on every request
@@ -24,8 +34,11 @@ const AUTH_ROUTES = [ROUTES.signin, ROUTES.recovery, ROUTES.setPassword];
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Get auth token from cookies
-  const authToken = request.cookies.get("auth_token")?.value;
+  // Check if user has valid access token and authentication flag
+  const accessToken = request.cookies.get("accessToken")?.value;
+  const isAuthenticatedFlag =
+    request.cookies.get("is_authenticated")?.value === "true";
+  const isAuthenticated = !!accessToken && isAuthenticatedFlag;
 
   // Check if the current path is a public route
   const isPublicRoute = PUBLIC_ROUTES.some(
@@ -37,14 +50,19 @@ export function middleware(request: NextRequest) {
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  // Case 1: User is authenticated but tries to access auth pages (signin, etc.)
-  if (authToken && isAuthRoute) {
+  // Check if user has valid authentication
+  const hasValidAuth = isAuthenticated;
+
+  // Redirect authenticated users away from auth pages to dashboard
+  if (hasValidAuth && isAuthRoute) {
     // Redirect to dashboard or home
     return NextResponse.redirect(new URL(ROUTES.home, request.url));
   }
 
   // Case 2: User is not authenticated and tries to access a protected route
-  if (!authToken && !isPublicRoute) {
+  // ALL routes that are NOT in PUBLIC_ROUTES require authentication
+  // This includes: /home, /analytics, /appointments, /profile, etc.
+  if (!hasValidAuth && !isPublicRoute) {
     // Store the original URL to redirect back after login
     const url = new URL(ROUTES.signin, request.url);
     url.searchParams.set("callbackUrl", encodeURI(request.url));
@@ -53,6 +71,9 @@ export function middleware(request: NextRequest) {
   }
 
   // Case 3: All other cases - allow the request to proceed
+  // This covers:
+  // - Authenticated users accessing protected routes (✅ Allow)
+  // - Unauthenticated users accessing public routes (✅ Allow)
   return NextResponse.next();
 }
 

@@ -58,14 +58,14 @@ export const Register = () => {
             <RegisterForm />
             <div className="mt-6 text-center text-sm text-gray-600">
               <p>
-                {t("register.by-registering")}
+                {t("register.by-registering")}{" "}
                 <Link
                   href="#"
                   className="font-medium text-primary hover:text-primary/90 transition-colors"
                 >
                   {t("register.terms")}
-                </Link>
-                {t("register.and")}
+                </Link>{" "}
+                {t("register.and")}{" "}
                 <Link
                   href="#"
                   className="font-medium text-primary hover:text-primary/90 transition-colors"
@@ -77,7 +77,7 @@ export const Register = () => {
 
             <div className="mt-6 pt-6 border-t border-gray-200 text-center">
               <p className="text-sm text-gray-600">
-                {t("register.already-have-account")}
+                {t("register.already-have-account")}{" "}
                 <Link
                   href={ROUTES.signin}
                   className="font-medium text-primary hover:text-primary/90 transition-colors"

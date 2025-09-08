@@ -5,13 +5,10 @@
 
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import routingReducer from "@store/features/routingSlice";
-import { tokenReducer } from "@store/features/tokenSlice";
 import { authReducer } from "@store/features/authSlice";
-import { setPasswordReducer } from "@store/features/setPasswordSlice";
-import passwordRecoveryReducer from "@store/features/passwordRecoverySlice";
+
 import { useDispatch } from "react-redux";
-import { ninoxAuthService } from "@store/services/ninoxAuthService";
+
 import {
   FLUSH,
   PAUSE,
@@ -28,12 +25,7 @@ import storage from "redux-persist/lib/storage";
  * @remarks Combined root reducer including all feature reducers
  */
 const rootReducer = combineReducers({
-  token: tokenReducer,
   auth: authReducer,
-  routing: routingReducer,
-  setPassword: setPasswordReducer,
-  passwordRecovery: passwordRecoveryReducer,
-  [ninoxAuthService.reducerPath]: ninoxAuthService.reducer,
 });
 
 /**
@@ -44,7 +36,7 @@ const persistConfig = {
   key: "root",
   version: 1,
   storage,
-  whitelist: ["token", "auth", "routing", "setPassword", "passwordRecovery"], // Persist auth and token state
+  whitelist: ["auth"], // Persist auth and token state
 };
 
 /**
@@ -63,7 +55,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(ninoxAuthService.middleware),
+    }),
 });
 
 // Set up listeners for RTK-Query

@@ -17,5 +17,11 @@ export interface ApiError {
  */
 export interface AuthError extends ApiError {
   /** Specific reason for authentication failure */
-  authFailureReason?: 'invalid_credentials' | 'expired_token' | 'invalid_token';
+  authFailureReason?:
+    | "invalid_credentials"
+    | "expired_token"
+    | "invalid_token"
+    | "user_id_mismatch"
+    | "invalid_fingerprint"
+    | "invalid_refresh_token";
 }

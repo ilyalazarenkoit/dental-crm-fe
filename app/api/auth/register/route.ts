@@ -8,9 +8,23 @@ export async function POST(request: NextRequest) {
     const { ...registerData } = data;
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    const registerUrl = `${apiUrl}${endpoint}`;
 
-    console.log("Sending registration request to:", registerUrl);
+    if (!apiUrl) {
+      console.error("NEXT_PUBLIC_API_URL is not defined");
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Server configuration error",
+          error: {
+            code: "E500_CONFIGURATION_ERROR",
+            message: "Server configuration error",
+          },
+        },
+        { status: 500 }
+      );
+    }
+
+    const registerUrl = `${apiUrl}${endpoint}`;
 
     try {
       const response = await fetch(registerUrl, {

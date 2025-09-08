@@ -27,6 +27,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ROUTES } from "@/constants/routes";
 
 // Define form state types
 type FormStatus = "idle" | "loading" | "success" | "error";
@@ -133,7 +134,7 @@ export default function ResendVerificationPage() {
               <div className="pt-4">
                 <Button
                   variant="outline"
-                  onClick={() => router.push("/login")}
+                  onClick={() => router.push(ROUTES.signin)}
                   className="w-full"
                 >
                   {t("auth.email-verification.go-to-sign-in")}
@@ -209,7 +210,7 @@ export default function ResendVerificationPage() {
                   </Button>
                   <div className="text-center">
                     <Link
-                      href="/login"
+                      href={ROUTES.signin}
                       className="text-sm text-muted-foreground hover:text-primary font-medium"
                     >
                       <Button variant="outline" className="w-full">
