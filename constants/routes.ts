@@ -2,7 +2,7 @@ enum ROUTES {
   landing = "/",
   signin = "/signin",
   register = "/register",
-  recovery = "/password-recovery",
+  recovery = "/reset-password",
   setPassword = "/set-password",
   passwordChanged = "/password-changed",
   notFound = "/not-found",
