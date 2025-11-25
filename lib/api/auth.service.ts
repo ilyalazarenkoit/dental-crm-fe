@@ -216,15 +216,14 @@ export const AuthService = {
   },
 
   /**
-   * Повторная отправка письма для верификации email
-   * @param email Email пользователя
-   * @returns Ответ от API
+   * Resend verification email
+   * @param email User email
+   * @returns API response
    */
   resendVerificationEmail: async (
     email: string
   ): Promise<ResendVerificationResponse> => {
     try {
-      // Используем локальный API роут Next.js вместо прямого запроса к бэкенду
       const response = await fetch("/api/auth/resend-verification", {
         method: "POST",
         headers: {
@@ -233,10 +232,8 @@ export const AuthService = {
         body: JSON.stringify({ email }),
       });
 
-      // Обрабатываем ответ
       const data = await response.json();
 
-      // Возвращаем полный ответ, включая структуру ошибки, если она есть
       return data;
     } catch (error) {
       console.error("Resend verification error:", error);

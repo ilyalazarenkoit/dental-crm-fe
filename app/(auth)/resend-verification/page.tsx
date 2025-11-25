@@ -167,7 +167,6 @@ export default function ResendVerificationPage() {
                           onKeyDown={handleKeyDown}
                           onPaste={(e) => {
                             handlePaste(e);
-                            // После обработки paste нужно обновить значение в форме
                             setTimeout(() => {
                               field.onChange(e.currentTarget.value);
                             }, 0);

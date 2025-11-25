@@ -27,7 +27,6 @@ export const getApiBaseUrl = (): string => {
   return API_URLS[environment];
 };
 
-// Конфигурация API эндпоинтов
 export const API_ENDPOINTS = {
   auth: {
     register: "/auth/register",

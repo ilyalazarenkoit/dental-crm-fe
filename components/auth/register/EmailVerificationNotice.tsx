@@ -36,7 +36,6 @@ export const EmailVerificationNotice: React.FC<
           )
         );
 
-        // Сбросить статус успеха через 5 секунд
         setTimeout(() => {
           setResendSuccess(false);
         }, 5000);

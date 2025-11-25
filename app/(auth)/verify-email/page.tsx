@@ -57,9 +57,8 @@ export default function VerifyEmailPage() {
     // Check for translation for specific error code
     const specificErrorKey = `auth.email-verification.errors.${errorCode}`;
 
-    // Use defaultValue option to check for translation
     const specificErrorMessage = t(specificErrorKey, {
-      defaultValue: "", // Пустая строка, если перевода нет
+      defaultValue: "",
     });
 
     if (specificErrorMessage) {

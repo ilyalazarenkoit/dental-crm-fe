@@ -10,13 +10,12 @@ interface FullScreenLoaderProps {
 }
 
 /**
- * Компонент лоадера на весь экран с анимацией
+ * Full-screen loader component with animation
  */
 export const FullScreenLoader: React.FC<FullScreenLoaderProps> = ({
   isLoading,
   message = "Loading...",
 }) => {
-  // Блокировать скролл страницы, когда лоадер активен
   useEffect(() => {
     if (isLoading) {
       document.body.style.overflow = "hidden";

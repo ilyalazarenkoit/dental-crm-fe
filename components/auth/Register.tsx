@@ -13,17 +13,12 @@ export const Register = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      // md в Tailwind обычно начинается с 768px
       setIsMobile(window.innerWidth < 768);
     };
 
-    // Начальная проверка
     handleResize();
-
-    // Добавляем слушатель изменения размера окна
     window.addEventListener("resize", handleResize);
 
-    // Очистка слушателя
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 

@@ -74,10 +74,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [localIsMobileOpen, setLocalIsMobileOpen] = useState(false);
   const { logout } = useLogout();
 
-  // Use external state if provided, otherwise use local state
   const isMobileOpen = externalIsMobileOpen ?? localIsMobileOpen;
   const setIsMobileOpen = externalSetIsMobileOpen ?? setLocalIsMobileOpen;
-  const isExpanded = externalIsExpanded; // Используем внешнее состояние
+  const isExpanded = externalIsExpanded;
 
   // Navigation items
   const navItems: NavItem[] = [
