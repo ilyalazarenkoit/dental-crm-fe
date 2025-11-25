@@ -1,4 +1,4 @@
-# 🦷 DentalCRM - Next-Generation Dental Practice Management System
+# 🦷 DentalCRM Frontend
 
 <div align="center">
 
@@ -7,614 +7,210 @@
 ![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)
 
-**A modern, secure, and intelligent SaaS platform designed specifically for dental clinics**
-
-[![Status](https://img.shields.io/badge/status-in%20development-yellow?style=flat-square)](https://github.com)
-[![License](https://img.shields.io/badge/license-proprietary-red?style=flat-square)](https://github.com)
-[![Security](https://img.shields.io/badge/security-hardened-green?style=flat-square)](https://github.com)
+**B2B SaaS platform for dental clinics** | **Status: In Development**
 
 </div>
 
 ---
 
-## 📋 Table of Contents
+## 📋 Overview
 
-- [Overview](#-overview)
-- [Key Features](#-key-features)
-- [Technology Stack](#-technology-stack)
-- [Architecture](#-architecture)
-- [Project Structure](#-project-structure)
-- [Getting Started](#-getting-started)
-- [Security](#-security)
-- [Internationalization](#-internationalization)
-- [Development Status](#-development-status)
-- [Contributing](#-contributing)
+DentalCRM is a modern SaaS platform designed for dental practice management. The project is currently in early development with authentication and core infrastructure implemented.
 
 ---
 
-## 🎯 Overview
+## ✨ Features
 
-**DentalCRM** is a comprehensive B2B SaaS platform revolutionizing dental practice management. Built with modern web technologies and designed with security, scalability, and user experience at its core, this system empowers dental clinics to streamline operations, manage patient relationships, and prepare for AI-powered automation.
+### ✅ Implemented
 
-### 🎯 Mission
+- **Authentication System**
 
-To provide dental professionals with an intelligent, secure, and user-friendly platform that automates administrative tasks while maintaining the highest standards of data protection and compliance.
+  - User registration (organization owner)
+  - Login with JWT tokens
+  - Email verification
+  - Password recovery (forgot/reset)
+  - Resend verification email
+  - Token refresh mechanism
 
-### 🚀 Vision
+- **Security**
 
-A future-ready platform that combines cutting-edge technology with healthcare industry best practices, enabling dental clinics to focus on what matters most: patient care.
+  - Security headers (CSP, HSTS, X-Frame-Options, etc.)
+  - Security middleware (SQL injection, XSS protection)
+  - Input validation (Zod schemas)
+  - CSRF protection (SameSite cookies)
+  - Rate limiting infrastructure (pending API integration)
+  - Security logging infrastructure (pending API integration)
 
----
+- **UI/UX**
 
-## ✨ Key Features
+  - Landing page
+  - Design system (shadcn/ui components)
+  - Responsive layouts
+  - Dashboard layout with sidebar navigation
+  - Form validation and error handling
 
-### 🔐 **Authentication & Security** ✅
+- **Internationalization**
 
-- ✅ **Complete Authentication System**: Login, registration, email verification, password recovery
-- ✅ **JWT-based Authentication**: Secure token-based authentication with HTTP-only cookies
-- ✅ **Enterprise-Grade Security**: Comprehensive security headers, rate limiting, and secure authentication
-- ✅ **Multi-Tenant Architecture**: Foundation for organization-based data isolation
-- 🚧 **GDPR-Compliant Architecture**: Full compliance with European data protection regulations (in development)
-- 🚧 **Data Anonymization**: Advanced pseudonymization for AI processing (planned)
+  - i18n setup (i18next)
+  - Multi-language support (EN, DE, UA)
+  - Translation files structure
 
-### 👥 **Patient Management** 🚧
+- **Patient Management** (Partial)
+  - Patient list components
+  - Patient API integration
+  - Basic filtering UI
 
-- 🚧 Comprehensive patient database with advanced search and filtering
-- 🚧 Patient status tracking (new, active, VIP, archived)
-- 🚧 Secure document storage and retrieval
-- 🚧 Multi-language patient records support
+### 🚧 In Development
 
-### 📅 **Appointment Scheduling** 🚧
+- Patient management (CRUD operations)
+- Dashboard home page
+- Appointment scheduling
+- Analytics dashboard
+- Financial management
+- Employee management
 
-- 🚧 Interactive calendar with drag-and-drop functionality
-- 🚧 Automated reminders and notifications
-- 🚧 Resource management and conflict detection
-- 🚧 Mobile-responsive scheduling interface
+### 📋 Planned
 
-### 📊 **Analytics & Reporting** 🚧
-
-- 🚧 Real-time dashboard with key performance indicators
-- 🚧 Financial analytics and reporting
-- 🚧 Patient flow analytics
-- 🚧 Customizable reports
-
-### 🌍 **Internationalization** 🚧
-
-- 🚧 Multi-language support (English, German, Ukrainian) - infrastructure ready
-- 🚧 RTL-ready architecture
-- 🚧 Localized date, time, and currency formats
-- 🚧 Dynamic language switching
-
-### 🎨 **Modern UI/UX** 🚧
-
-- ✅ Premium design system with consistent components (shadcn/ui)
-- ✅ Mobile-first responsive design
-- ✅ Smooth animations and transitions
-- 🚧 Accessibility-first approach (WCAG 2.1) - in progress
-
-### 🤖 **AI Integration** 📋
-
-- 📋 AI-powered visit record generation (planned)
-- 📋 Intelligent appointment recommendations (planned)
-- 📋 Automated documentation assistance (planned)
-- 📋 Human-in-the-loop workflow for safety (planned)
-
-**Legend:**
-
-- ✅ **Implemented** - Feature is complete and functional
-- 🚧 **In Development** - Feature is currently being developed
-- 📋 **Planned** - Feature is planned for future implementation
+- AI-powered features
+- Advanced reporting
+- Document management
+- Mobile applications
+- Third-party integrations
 
 ---
 
 ## 🛠 Technology Stack
 
-### **Frontend Framework**
+### Core
 
-- **Next.js 15.1** - React framework with App Router
-- **React 19** - Latest React with concurrent features
-- **TypeScript 5** - Type-safe development
+- **Next.js 15.1** - App Router
+- **React 19** - UI library
+- **TypeScript 5** - Type safety
 
-### **State Management**
+### State Management
 
-- **Redux Toolkit** - Predictable state container
+- **Redux Toolkit** - Global state
 - **Redux Persist** - State persistence
-- **React Query** (planned) - Server state management
 
-### **Styling & UI**
+### UI & Styling
 
-- **Tailwind CSS 3.4** - Utility-first CSS framework
-- **shadcn/ui** - High-quality component library
-- **Radix UI** - Accessible component primitives
-- **Framer Motion** - Animation library
+- **Tailwind CSS 3.4** - Styling
+- **shadcn/ui** - Component library
+- **Radix UI** - Accessible primitives
+- **Framer Motion** - Animations
 
-### **Form Management**
+### Forms & Validation
 
-- **React Hook Form** - Performant form library
+- **React Hook Form** - Form management
 - **Zod** - Schema validation
-- **@hookform/resolvers** - Form validation integration
 
-### **Internationalization**
+### Internationalization
 
-- **i18next** - Internationalization framework
-- **react-i18next** - React bindings for i18next
-- **next-i18next** - Next.js integration
+- **i18next** - i18n framework
+- **react-i18next** - React bindings
 
-### **Authentication & Security**
-
-- **JWT** - Token-based authentication
-- **HTTP-only Cookies** - Secure token storage
-- **Rate Limiting** - API protection
-- **Security Headers** - OWASP-compliant headers
-
-### **Development Tools**
-
-- **ESLint** - Code linting
-- **TypeScript** - Static type checking
-- **Husky** - Git hooks
-- **Commitlint** - Commit message linting
-
-### **Additional Libraries**
+### Additional
 
 - **Axios** - HTTP client
-- **date-fns** - Date manipulation
-- **Zod** - Schema validation
-- **React PDF** - PDF generation
-- **Recharts** - Data visualization
+- **date-fns** - Date utilities
+- **JWT** - Authentication tokens
 
 ---
 
-## 🏗 Architecture
+## 🚀 Getting Started
 
-### **Application Architecture**
+### Prerequisites
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Next.js App Router                    │
-├─────────────────────────────────────────────────────────┤
-│  (auth) Routes          │  (dashboard) Routes            │
-│  - Sign In             │  - Dashboard                   │
-│  - Registration        │  - Patients                    │
-│  - Password Recovery   │  - Appointments                │
-│  - Email Verification  │  - Analytics                   │
-│                        │  - Finance                     │
-└─────────────────────────────────────────────────────────┘
-│                    API Routes Layer                      │
-│  - Authentication      │  - Data Services               │
-│  - Middleware          │  - Error Handling              │
-└─────────────────────────────────────────────────────────┘
-│                    State Management                      │
-│  - Redux Store         │  - Auth Slice                  │
-│  - Persistence         │  - Feature Slices             │
-└─────────────────────────────────────────────────────────┘
-│                    Service Layer                         │
-│  - API Client          │  - HTTP Client                 │
-│  - Auth Service        │  - Error Handler               │
-└─────────────────────────────────────────────────────────┘
+- Node.js 18.x+
+- npm/yarn/pnpm
+
+### Installation
+
+```bash
+# Clone repository
+git clone <repository-url>
+cd dentalcrmFE
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.local
+# Edit .env.local with your configuration
+
+# Run development server
+npm run dev
 ```
 
-### **Multi-Tenant Architecture**
+### Environment Variables
 
-- **Organization-Based Isolation**: Complete data separation at the application level
-- **Automatic Filtering**: All queries automatically filtered by `organizationId`
-- **Secure Context**: Organization context derived from authenticated user
-- **Scalable Design**: Single database with logical separation
+```env
+NEXT_PUBLIC_API_ENV=development
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
 
-### **Security Architecture**
+### Available Scripts
 
-- **Defense in Depth**: Multiple layers of security
-- **OWASP Compliance**: Following OWASP Top 10 guidelines
-- **Security Headers**: Comprehensive HTTP security headers
-- **Rate Limiting**: Protection against abuse
-- **Input Validation**: Server and client-side validation
-- **Secure Authentication**: JWT with HTTP-only cookies
+```bash
+npm run dev      # Development server
+npm run build    # Production build
+npm run start    # Production server
+npm run lint     # ESLint
+```
 
 ---
 
 ## 📁 Project Structure
 
 ```
-dentalcrmFE/
-├── app/                          # Next.js App Router
-│   ├── (auth)/                   # Authentication route group
-│   │   ├── signin/              # Sign in page
-│   │   ├── register/            # Registration page
-│   │   ├── verify-email/        # Email verification
-│   │   ├── reset-password/      # Password recovery
-│   │   └── resend-verification/ # Resend verification
-│   ├── (dashboard)/             # Dashboard route group
-│   │   ├── home/                # Dashboard home
-│   │   ├── patients/            # Patient management
-│   │   ├── appointments/        # Appointment scheduling
-│   │   ├── analytics/           # Analytics dashboard
-│   │   ├── finance/             # Financial management
-│   │   └── employees/          # Employee management
-│   ├── api/                     # API routes
-│   │   ├── auth/               # Authentication endpoints
-│   │   └── patients/           # Patient endpoints
-│   ├── layout.tsx              # Root layout
-│   ├── page.tsx                # Landing page
-│   └── globals.css             # Global styles
-│
-├── components/                  # React components
-│   ├── ui/                     # Reusable UI components (shadcn/ui)
-│   ├── auth/                   # Authentication components
-│   ├── landing/                # Landing page components
-│   ├── navigation/             # Navigation components
-│   ├── patients/               # Patient management components
-│   └── appointments/           # Appointment components
-│
-├── lib/                         # Core libraries
-│   ├── api/                    # API services
-│   │   ├── auth.service.ts     # Authentication service
-│   │   ├── patients.service.ts # Patient service
-│   │   ├── config.ts           # API configuration
-│   │   └── http-client.ts     # HTTP client
-│   ├── store/                  # Redux store
-│   │   ├── features/           # Redux slices
-│   │   ├── middleware/         # Custom middleware
-│   │   └── store.ts            # Store configuration
-│   ├── i18n/                   # Internationalization
-│   │   ├── i18n.ts             # i18n configuration
-│   │   └── server.ts           # Server-side i18n
-│   ├── utils.ts                # Utility functions
-│   ├── error-handler.ts        # Error handling
-│   └── security-logger.ts      # Security logging
-│
-├── hooks/                       # Custom React hooks
-│   ├── useAuth.ts              # Authentication hook
-│   ├── useDebounce.ts          # Debounce hook
-│   ├── useEmailValidation.ts   # Email validation
-│   └── usePasswordValidation.ts # Password validation
-│
-├── models/                      # TypeScript models
-│   ├── auth.model.ts           # Authentication models
-│   ├── patient.model.ts        # Patient models
-│   └── api.model.ts            # API models
-│
-├── constants/                   # Application constants
-│   └── routes.ts               # Route definitions
-│
-├── public/                      # Static assets
-│   ├── locales/                # Translation files
-│   │   ├── en/                 # English translations
-│   │   ├── de/                 # German translations
-│   │   └── ua/                 # Ukrainian translations
-│   └── images/                 # Image assets
-│
-├── middleware.ts                # Next.js middleware
-├── next.config.ts               # Next.js configuration
-├── tailwind.config.ts           # Tailwind CSS configuration
-├── tsconfig.json                # TypeScript configuration
-└── package.json                 # Dependencies
-```
+app/
+├── (auth)/              # Auth routes (signin, register, etc.)
+├── (dashboard)/         # Dashboard routes (home, patients, etc.)
+└── api/                 # API routes (auth, patients)
 
----
+components/
+├── ui/                  # shadcn/ui components
+├── auth/                # Authentication components
+├── landing/             # Landing page components
+├── navigation/          # Layout components
+└── patients/            # Patient management components
 
-## 🚀 Getting Started
-
-### **Prerequisites**
-
-- **Node.js** 18.x or later
-- **npm** 9.x or later (or **yarn** / **pnpm**)
-- **Git** for version control
-
-### **Installation**
-
-1. **Clone the repository**
-
-```bash
-git clone https://github.com/your-org/dentalcrmFE.git
-cd dentalcrmFE
-```
-
-2. **Install dependencies**
-
-```bash
-npm install
-# or
-yarn install
-# or
-pnpm install
-```
-
-3. **Set up environment variables**
-
-Create a `.env.local` file in the root directory:
-
-```env
-# API Configuration
-NEXT_PUBLIC_API_ENV=development
-NEXT_PUBLIC_API_URL=http://localhost:3000
-
-# Authentication
-NEXT_PUBLIC_JWT_SECRET=your-secret-key
-
-# Feature Flags (optional)
-NEXT_PUBLIC_ENABLE_ANALYTICS=false
-```
-
-4. **Run the development server**
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
-
-5. **Open your browser**
-
-Navigate to [http://localhost:3000](http://localhost:3000)
-
-### **Available Scripts**
-
-```bash
-# Development
-npm run dev          # Start development server with Turbopack
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint
-
-# Type Checking
-npm run type-check   # Run TypeScript type checking
+lib/
+├── api/                 # API services
+├── store/               # Redux store
+├── i18n/                # i18n configuration
+└── utils.ts             # Utilities
 ```
 
 ---
 
 ## 🔒 Security
 
-### **Security Features**
-
-- ✅ **OWASP Top 10 Compliance**
-- ✅ **Comprehensive Security Headers** (CSP, HSTS, X-Frame-Options, etc.)
-- ✅ **Rate Limiting** - Protection against brute force attacks
-- ✅ **Input Validation** - Server and client-side validation
-- ✅ **Secure Authentication** - JWT with HTTP-only cookies
-- ✅ **XSS Protection** - Content Security Policy
-- ✅ **CSRF Protection** - SameSite cookie policy
-- ✅ **SQL Injection Prevention** - Parameterized queries
-- ✅ **Security Logging** - Audit trail for security events
-
-### **Security Headers**
-
-The application implements comprehensive security headers including:
-
-- **Content Security Policy (CSP)** - XSS protection
-- **Strict-Transport-Security (HSTS)** - Force HTTPS
-- **X-Frame-Options** - Clickjacking protection
-- **X-Content-Type-Options** - MIME sniffing protection
-- **Referrer-Policy** - Referrer information control
-- **Permissions-Policy** - Browser API restrictions
-
-### **GDPR Compliance**
-
-- Data minimization principles
-- User consent management
-- Right to access and deletion
-- Data portability
-- Privacy by design architecture
+- ✅ Security headers (CSP, HSTS, X-Frame-Options)
+- ✅ Security middleware (SQL injection, XSS detection)
+- ✅ Input validation (Zod)
+- ✅ CSRF protection
+- 🚧 Rate limiting (infrastructure ready, integration pending)
+- 🚧 Security logging (infrastructure ready, integration pending)
 
 ---
 
 ## 🌍 Internationalization
 
-The application supports multiple languages with full i18n implementation:
-
-- **English (EN)** - Primary language
-- **German (DE)** - Secondary language
-- **Ukrainian (UA)** - Secondary language
-
-### **Translation Structure**
-
-Translations are stored in `public/locales/{lang}/common.json` and loaded dynamically at runtime.
-
-### **Usage Example**
-
-```typescript
-import { useTranslation } from "react-i18next";
-
-function MyComponent() {
-  const { t } = useTranslation();
-
-  return <h1>{t("landing.hero-title")}</h1>;
-}
-```
-
----
-
-## 🚧 Development Status
-
-### **Current Status: Early Development Phase**
-
-This project is in **early development**. Currently, only the authentication and registration module is fully implemented. All other features are in planning or early development stages.
-
-#### ✅ **Completed Features**
-
-- [x] **Authentication System** - Complete authentication flow
-  - [x] User registration (organization owner)
-  - [x] Login with JWT tokens
-  - [x] Email verification
-  - [x] Password recovery (forgot/reset password)
-  - [x] Resend verification email
-  - [x] Secure token management (HTTP-only cookies)
-- [x] **Security Foundation**
-  - [x] Security headers implementation
-  - [x] Rate limiting infrastructure
-  - [x] Input validation
-- [x] **UI Foundation**
-  - [x] Design system setup (shadcn/ui)
-  - [x] Landing page
-  - [x] Responsive layout structure
-  - [x] Basic navigation components
-
-#### 🚧 **In Development**
-
-- [ ] **Patient Management Module**
-  - [ ] Patient CRUD operations (UI in progress)
-  - [ ] Patient search and filtering
-  - [ ] Patient status management
-- [ ] **Dashboard**
-  - [ ] Dashboard layout and navigation
-  - [ ] Dashboard home page
-- [ ] **Internationalization**
-  - [ ] i18n infrastructure (partially ready)
-  - [ ] Translation files completion
-  - [ ] Language switcher implementation
-
-#### 📋 **Planned Features**
-
-- [ ] **Appointment Scheduling System**
-  - [ ] Interactive calendar
-  - [ ] Drag-and-drop functionality
-  - [ ] Automated reminders
-- [ ] **Analytics & Reporting**
-  - [ ] Analytics dashboard
-  - [ ] Financial reporting
-  - [ ] Patient flow analytics
-- [ ] **Financial Management**
-  - [ ] Billing system
-  - [ ] Payment processing
-  - [ ] Financial reports
-- [ ] **Employee Management**
-  - [ ] Employee CRUD
-  - [ ] Role management
-  - [ ] Permissions system
-- [ ] **Document Management**
-  - [ ] Secure document storage
-  - [ ] Document retrieval
-  - [ ] File upload/download
-- [ ] **AI Integration** (Future)
-  - [ ] AI-powered visit record generation
-  - [ ] Intelligent recommendations
-  - [ ] Automated documentation
-- [ ] **Mobile Application** (Future)
-  - [ ] iOS app
-  - [ ] Android app
-- [ ] **Third-party Integrations** (Future)
-  - [ ] Calendar integrations
-  - [ ] Payment gateways
-  - [ ] Email services
-
-### **Roadmap**
-
-- **Q1 2024**: Core features completion
-- **Q2 2024**: AI integration (beta)
-- **Q3 2024**: Advanced analytics
-- **Q4 2024**: Mobile applications
-
----
-
-## 🎨 Design System
-
-The application uses a custom design system built on top of Tailwind CSS and shadcn/ui:
-
-### **Color Palette**
-
-- **Primary**: Deep charcoal black (`hsl(0 0% 9%)`)
-- **Trust Colors**: Green palette for security indicators
-- **Gradients**: Purple-cyan-teal for premium effects
-- **Neutral**: Gray scale for text and backgrounds
-
-### **Typography**
-
-- **Font Family**: Inter (Google Fonts)
-- **Headings**: Bold, clean sans-serif with strong hierarchy
-- **Body**: Optimized for readability
-
-### **Component Library**
-
-Built with **shadcn/ui** components, providing:
-
-- Accessible components
-- Customizable styling
-- TypeScript support
-- Dark mode ready
-
----
-
-## 📊 Performance
-
-### **Optimization Strategies**
-
-- **Code Splitting** - Automatic route-based code splitting
-- **Image Optimization** - Next.js Image component with WebP/AVIF
-- **Bundle Optimization** - Tree shaking and minification
-- **Caching Strategy** - Optimized cache headers
-- **Lazy Loading** - Component and image lazy loading
-
-### **Performance Metrics**
-
-- **First Contentful Paint (FCP)**: < 1.5s
-- **Largest Contentful Paint (LCP)**: < 2.5s
-- **Time to Interactive (TTI)**: < 3.5s
-- **Cumulative Layout Shift (CLS)**: < 0.1
-
----
-
-## 🤝 Contributing
-
-### **Development Guidelines**
-
-1. **Code Style**: Follow ESLint and Prettier configurations
-2. **TypeScript**: Strict type checking enabled
-3. **Commits**: Follow Conventional Commits specification
-4. **Testing**: Write tests for new features
-5. **Documentation**: Update documentation for API changes
-
-### **Branch Strategy**
-
-- `main` - Production-ready code
-- `develop` - Development branch
-- `feature/*` - Feature branches
-- `fix/*` - Bug fix branches
-
-### **Pull Request Process**
-
-1. Create a feature branch from `develop`
-2. Make your changes
-3. Write/update tests
-4. Update documentation
-5. Submit pull request
-6. Code review and approval
-7. Merge to `develop`
+- Languages: English (EN), German (DE), Ukrainian (UA)
+- Framework: i18next with react-i18next
+- Translation files: `public/locales/{lang}/common.json`
 
 ---
 
 ## 📝 License
 
-This project is proprietary software. All rights reserved.
-
----
-
-## 👥 Team
-
-Built with ❤️ by a dedicated team of developers passionate about healthcare technology.
-
----
-
-## 📞 Contact & Support
-
-For questions, support, or collaboration inquiries, please contact the development team.
-
----
-
-## 🙏 Acknowledgments
-
-- **Next.js Team** - For the amazing framework
-- **shadcn** - For the beautiful component library
-- **Radix UI** - For accessible component primitives
-- **Tailwind CSS** - For the utility-first CSS framework
+Proprietary - All rights reserved
 
 ---
 
 <div align="center">
 
-**Made with ❤️ for dental professionals worldwide**
-
-[![Next.js](https://img.shields.io/badge/Next.js-15.1-black?style=flat-square&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-19.0-61DAFB?style=flat-square&logo=react)](https://react.dev/)
+**Made with ❤️ for dental professionals**
 
 </div>
