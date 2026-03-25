@@ -33,7 +33,11 @@ export interface AuthState {
     organizationId: string;
     /** User role */
     role: string;
+    /** Avatar URL from /users/me — null until bootstrap completes */
+    avatarUrl?: string | null;
   } | null;
+  /** Organization data from /users/me bootstrap — null until first fetch */
+  organization: MeOrganization | null;
 }
 
 /**
@@ -116,6 +120,37 @@ export interface RefreshResponse {
     organizationId: string;
     /** User role */
     role: string;
+  };
+}
+
+/**
+ * Shapes returned by GET /users/me (bootstrap endpoint).
+ * Called once on app init to hydrate user + organization data.
+ */
+export interface MeUser {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: "owner" | "admin" | "doctor";
+  avatarUrl: string | null;
+}
+
+export interface MeOrganization {
+  id: string;
+  name: string;
+  logoUrl: string | null;
+}
+
+export interface UserMeResponse {
+  success: boolean;
+  data: {
+    user: MeUser;
+    organization: MeOrganization;
+  };
+  meta: {
+    timestamp: string;
+    path: string;
   };
 }
 

@@ -34,11 +34,18 @@ const AUTH_ROUTES = [
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check if user has valid access token and authentication flag
+  // isAuthenticated is determined by the long-lived is_authenticated cookie (7 days).
+  // The short-lived accessToken cookie (15 min) is refreshed automatically by
+  // httpClient on the first API call after expiry, so we must NOT require it here.
+  // If the refresh token is also expired/revoked, the next API call will return 401,
+  // httpClient will dispatch logout(), and the user will be redirected to sign-in.
   const accessToken = request.cookies.get("accessToken")?.value;
   const isAuthenticatedFlag =
     request.cookies.get("is_authenticated")?.value === "true";
-  const isAuthenticated = !!accessToken && isAuthenticatedFlag;
+  const isAuthenticated = isAuthenticatedFlag;
+
+  // Keep accessToken in scope — may be used for future route-level token inspection.
+  void accessToken;
 
   // Check if the current path is a public route
   const isPublicRoute = PUBLIC_ROUTES.some(
@@ -74,7 +81,20 @@ export function middleware(request: NextRequest) {
   // This covers:
   // - Authenticated users accessing protected routes (✅ Allow)
   // - Unauthenticated users accessing public routes (✅ Allow)
-  return NextResponse.next();
+  const response = NextResponse.next();
+
+  // Prevent the browser from caching protected pages in bfcache.
+  // Without this, clicking the Back button after logout can restore
+  // a protected page from cache, bypassing the middleware auth check.
+  if (!isPublicRoute) {
+    response.headers.set(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate"
+    );
+    response.headers.set("Pragma", "no-cache");
+  }
+
+  return response;
 }
 
 /**

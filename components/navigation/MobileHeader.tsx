@@ -1,8 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { List, X } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
+import { selectOrganization } from "@/lib/store/features/authSlice";
 
 interface MobileHeaderProps {
   isOpen: boolean;
@@ -14,6 +17,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   onToggle,
 }) => {
   const { t } = useTranslation();
+  const organization = useSelector(selectOrganization);
 
   return (
     <header
@@ -37,12 +41,26 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
         <div className="flex items-center justify-between px-4 py-3">
           {/* Left side - Logo and clinic name */}
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center shadow-md">
-              <span className="text-white font-bold text-sm">N</span>
+            <div className="relative h-8 w-8 rounded-xl flex-shrink-0 overflow-hidden shadow-md">
+              {organization?.logoUrl ? (
+                <Image
+                  src={organization.logoUrl}
+                  alt={organization.name}
+                  fill
+                  sizes="32px"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="h-full w-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">
+                    {organization?.name?.[0]?.toUpperCase() ?? "?"}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-semibold text-gray-900">
-                Nord Dental
+                {organization?.name ?? "—"}
               </span>
               <span className="text-xs text-gray-500">
                 {t("navigation.header.clinic")}

@@ -1,12 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 import { useLogout } from "@/hooks/useLogout";
+import { useSelector } from "react-redux";
+import {
+  selectUser,
+  selectOrganization,
+} from "@/lib/store/features/authSlice";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -73,10 +79,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const pathname = usePathname();
   const [localIsMobileOpen, setLocalIsMobileOpen] = useState(false);
   const { logout } = useLogout();
+  const user = useSelector(selectUser);
+  const organization = useSelector(selectOrganization);
 
   const isMobileOpen = externalIsMobileOpen ?? localIsMobileOpen;
   const setIsMobileOpen = externalSetIsMobileOpen ?? setLocalIsMobileOpen;
   const isExpanded = externalIsExpanded;
+
+  // isMobile must live in state (not read from window directly in render body)
+  // to avoid hydration mismatch: server renders window=undefined → desktop,
+  // client on mobile renders mobile → React sees a difference → hydration error.
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Navigation items
   const navItems: NavItem[] = [
@@ -125,7 +145,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const handleNavClick = () => {
-    if (window.innerWidth < 1024) {
+    if (isMobile) {
       setIsMobileOpen(false);
     }
   };
@@ -135,13 +155,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Header */}
       <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center shadow-sm flex-shrink-0">
-            <span className="text-white font-bold text-sm">N</span>
+          <div className="relative h-8 w-8 rounded-lg flex-shrink-0 overflow-hidden shadow-sm">
+            {organization?.logoUrl ? (
+              <Image
+                src={organization.logoUrl}
+                alt={organization.name}
+                fill
+                sizes="32px"
+                className="object-cover"
+              />
+            ) : (
+              <div className="h-full w-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
+                <span className="text-white font-bold text-sm">
+                  {organization?.name?.[0]?.toUpperCase() ?? "?"}
+                </span>
+              </div>
+            )}
           </div>
           {isExpanded && (
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-semibold text-gray-900 truncate">
-                {t("navigation.sidebar.clinic-name")}
+                {organization?.name ?? "—"}
               </span>
               <span className="text-xs text-gray-500 truncate">
                 {t("navigation.sidebar.clinic-type")}
@@ -252,13 +286,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 isExpanded ? "px-3 py-4" : "px-2 py-4 justify-center"
               )}
             >
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-sm flex-shrink-0 text-white font-semibold text-sm">
-                JS
+              <div className="relative h-8 w-8 rounded-full flex-shrink-0 overflow-hidden shadow-sm">
+                {user?.avatarUrl ? (
+                  <Image
+                    src={user.avatarUrl}
+                    alt={`${user.firstName} ${user.lastName}`}
+                    fill
+                    sizes="32px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+                    {user
+                      ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+                      : "?"}
+                  </div>
+                )}
               </div>
               {isExpanded && (
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    {t("navigation.sidebar.user-name")}
+                    {user ? `${user.firstName} ${user.lastName}` : "—"}
                   </p>
                 </div>
               )}
@@ -292,7 +340,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   );
 
   // Mobile sidebar (Sheet) - always expanded
-  if (typeof window !== "undefined" && window.innerWidth < 1024) {
+  if (isMobile) {
     return (
       <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
         <SheetTrigger asChild>
@@ -316,12 +364,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Header with clinic info */}
             <div className="flex h-20 items-center justify-start px-4 border-b border-gray-200 bg-gray-50">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center shadow-sm flex-shrink-0">
-                  <span className="text-white font-bold text-lg">N</span>
+                <div className="relative h-10 w-10 rounded-xl flex-shrink-0 overflow-hidden shadow-sm">
+                  {organization?.logoUrl ? (
+                    <Image
+                      src={organization.logoUrl}
+                      alt={organization.name}
+                      fill
+                      sizes="40px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">
+                        {organization?.name?.[0]?.toUpperCase() ?? "?"}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-lg font-semibold text-gray-900 truncate">
-                    {t("navigation.sidebar.clinic-name")}
+                    {organization?.name ?? "—"}
                   </span>
                   <span className="text-sm text-gray-500 truncate">
                     {t("navigation.sidebar.clinic-type")}
@@ -381,12 +443,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     variant="ghost"
                     className="w-full h-14 justify-start gap-4 text-gray-600 hover:bg-gray-100 border border-gray-200 min-w-0 px-4 py-4"
                   >
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-sm flex-shrink-0 text-white font-semibold text-base">
-                      JS
+                    <div className="relative h-10 w-10 rounded-full flex-shrink-0 overflow-hidden shadow-sm">
+                      {user?.avatarUrl ? (
+                        <Image
+                          src={user.avatarUrl}
+                          alt={`${user.firstName} ${user.lastName}`}
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-base">
+                          {user
+                            ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+                            : "?"}
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-base font-medium text-gray-900 truncate">
-                        {t("navigation.sidebar.user-name")}
+                        {user ? `${user.firstName} ${user.lastName}` : "—"}
                       </p>
                     </div>
                   </Button>
@@ -394,11 +470,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <DropdownMenuPortal>
                   <DropdownMenuContent
                     align={"end"}
-                    side={
-                      typeof window !== "undefined" && window.innerWidth < 1024
-                        ? "top"
-                        : "right"
-                    }
+                    side={isMobile ? "top" : "right"}
                     className="w-56 bg-white border border-gray-200 shadow-xl z-[999999]"
                   >
                     <DropdownMenuItem

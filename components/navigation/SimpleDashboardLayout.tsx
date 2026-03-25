@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { SimpleSidebar } from "./SimpleSidebar";
+import { MobileHeader } from "./MobileHeader";
 import { cn } from "@/lib/utils";
 
 interface SimpleDashboardLayoutProps {
@@ -15,6 +16,7 @@ export const SimpleDashboardLayout: React.FC<SimpleDashboardLayoutProps> = ({
 }) => {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -39,8 +41,18 @@ export const SimpleDashboardLayout: React.FC<SimpleDashboardLayoutProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-25">
-      {/* Sidebar */}
-      <SimpleSidebar onToggle={handleSidebarToggle} />
+      {/* Mobile header — hamburger button, only visible on mobile */}
+      <MobileHeader
+        isOpen={isMobileMenuOpen}
+        onToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      />
+
+      {/* Sidebar — receives external mobile open state so MobileHeader controls it */}
+      <SimpleSidebar
+        onToggle={handleSidebarToggle}
+        isMobileOpen={isMobileMenuOpen}
+        setIsMobileOpen={setIsMobileMenuOpen}
+      />
 
       {/* Main content */}
       <main
@@ -57,7 +69,7 @@ export const SimpleDashboardLayout: React.FC<SimpleDashboardLayoutProps> = ({
         <div className="lg:hidden h-20" />
 
         {/* Content */}
-        <div className="p-4 lg:p-6 lg:p-8">{children}</div>
+        <div className="p-4 lg:p-8">{children}</div>
       </main>
     </div>
   );

@@ -6,6 +6,7 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { authReducer } from "@store/features/authSlice";
+import { AuthState } from "@/models/auth.model";
 
 import { useDispatch } from "react-redux";
 
@@ -18,6 +19,7 @@ import {
   REHYDRATE,
   persistReducer,
   persistStore,
+  createTransform,
 } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 
@@ -29,6 +31,28 @@ const rootReducer = combineReducers({
 });
 
 /**
+ * Strips sensitive runtime data from the auth slice before writing to localStorage.
+ * accessToken belongs only in memory (httpClient) and in the httpOnly cookie —
+ * never in localStorage, per project security rules.
+ */
+type PersistedAuthState = Omit<AuthState, "accessToken" | "isRefreshing" | "error"> & {
+  accessToken: null;
+  isRefreshing: false;
+  error: null;
+};
+
+const authTransform = createTransform<AuthState, PersistedAuthState>(
+  (inboundState) => ({
+    ...inboundState,
+    accessToken: null,
+    isRefreshing: false,
+    error: null,
+  }),
+  (outboundState) => outboundState as AuthState,
+  { whitelist: ["auth"] }
+);
+
+/**
  * @remarks Configuration for Redux persist
  * Specifies which parts of the state should be persisted
  */
@@ -36,7 +60,8 @@ const persistConfig = {
   key: "root",
   version: 1,
   storage,
-  whitelist: ["auth"], // Persist auth and token state
+  whitelist: ["auth"],
+  transforms: [authTransform],
 };
 
 /**

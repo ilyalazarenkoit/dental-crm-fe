@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
@@ -26,6 +27,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Edit, Settings as SettingsIcon } from "lucide-react";
+import { useLogout } from "@/hooks/useLogout";
+import { useSelector } from "react-redux";
+import {
+  selectUser,
+  selectOrganization,
+} from "@/lib/store/features/authSlice";
 
 // Icons
 import {
@@ -44,6 +51,8 @@ import {
 
 interface SimpleSidebarProps {
   onToggle?: (expanded: boolean) => void;
+  isMobileOpen?: boolean;
+  setIsMobileOpen?: (open: boolean) => void;
 }
 
 interface NavItem {
@@ -54,20 +63,32 @@ interface NavItem {
   isActive?: boolean;
 }
 
-export const SimpleSidebar: React.FC<SimpleSidebarProps> = ({ onToggle }) => {
+export const SimpleSidebar: React.FC<SimpleSidebarProps> = ({
+  onToggle,
+  isMobileOpen: externalIsMobileOpen,
+  setIsMobileOpen: externalSetIsMobileOpen,
+}) => {
   const { t } = useTranslation();
   const pathname = usePathname();
+  const { logout } = useLogout();
+  const user = useSelector(selectUser);
+  const organization = useSelector(selectOrganization);
   const [isExpanded, setIsExpanded] = useState(true);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [localIsMobileOpen, setLocalIsMobileOpen] = useState(false);
+
+  // Allow external control (e.g. from SimpleDashboardLayout via MobileHeader)
+  const isMobileOpen = externalIsMobileOpen ?? localIsMobileOpen;
+  const setIsMobileOpen = externalSetIsMobileOpen ?? setLocalIsMobileOpen;
+  // isMobile must be in state — reading window.innerWidth directly in the render
+  // body causes hydration mismatch (server sees undefined, client sees real value).
+  const [isMobile, setIsMobile] = useState(false);
 
   // Responsive behavior
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 1024) {
-        setIsExpanded(false);
-      } else {
-        setIsExpanded(true);
-      }
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      setIsExpanded(!mobile);
     };
 
     handleResize();
@@ -140,13 +161,27 @@ export const SimpleSidebar: React.FC<SimpleSidebarProps> = ({ onToggle }) => {
       {/* Header */}
       <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center shadow-sm flex-shrink-0">
-            <span className="text-white font-bold text-sm">N</span>
+          <div className="relative h-8 w-8 rounded-lg flex-shrink-0 overflow-hidden shadow-sm">
+            {organization?.logoUrl ? (
+              <Image
+                src={organization.logoUrl}
+                alt={organization.name}
+                fill
+                sizes="32px"
+                className="object-cover"
+              />
+            ) : (
+              <div className="h-full w-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
+                <span className="text-white font-bold text-sm">
+                  {organization?.name?.[0]?.toUpperCase() ?? "?"}
+                </span>
+              </div>
+            )}
           </div>
           {isExpanded && (
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-semibold text-gray-900 truncate">
-                Nord Dental
+                {organization?.name ?? "—"}
               </span>
               <span className="text-xs text-gray-500 truncate">Clinic</span>
             </div>
@@ -255,13 +290,29 @@ export const SimpleSidebar: React.FC<SimpleSidebarProps> = ({ onToggle }) => {
                 isExpanded ? "px-3 py-4" : "px-2 py-4 justify-center"
               )}
             >
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-sm flex-shrink-0 text-white font-semibold text-sm">
-                JS
+              <div className="relative h-8 w-8 rounded-full flex-shrink-0 overflow-hidden shadow-sm">
+                {user?.avatarUrl ? (
+                  <Image
+                    src={user.avatarUrl}
+                    alt={`${user.firstName} ${user.lastName}`}
+                    fill
+                    sizes="32px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+                    {user
+                      ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+                      : "?"}
+                  </div>
+                )}
               </div>
               {isExpanded && (
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    Dr. John Smith
+                    {user
+                      ? `${user.firstName} ${user.lastName}`
+                      : "—"}
                   </p>
                 </div>
               )}
@@ -280,7 +331,10 @@ export const SimpleSidebar: React.FC<SimpleSidebarProps> = ({ onToggle }) => {
               Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-gray-200" />
-            <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer">
+            <DropdownMenuItem
+              className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
+              onClick={logout}
+            >
               <LogOut className="h-4 w-4" />
               Logout
             </DropdownMenuItem>
@@ -291,7 +345,7 @@ export const SimpleSidebar: React.FC<SimpleSidebarProps> = ({ onToggle }) => {
   );
 
   // Mobile sidebar (Sheet) - always expanded
-  if (typeof window !== "undefined" && window.innerWidth < 1024) {
+  if (isMobile) {
     return (
       <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
         <SheetTrigger asChild>
@@ -313,12 +367,26 @@ export const SimpleSidebar: React.FC<SimpleSidebarProps> = ({ onToggle }) => {
             <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
               <div className="flex items-center justify-between px-4 py-3 bg-white">
                 <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center shadow-sm">
-                    <span className="text-white font-bold text-sm">N</span>
+                  <div className="relative h-8 w-8 rounded-lg flex-shrink-0 overflow-hidden shadow-sm">
+                    {organization?.logoUrl ? (
+                      <Image
+                        src={organization.logoUrl}
+                        alt={organization.name}
+                        fill
+                        sizes="32px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center">
+                        <span className="text-white font-bold text-sm">
+                          {organization?.name?.[0]?.toUpperCase() ?? "?"}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-semibold text-gray-900">
-                      Nord Dental
+                      {organization?.name ?? "—"}
                     </span>
                     <span className="text-xs text-gray-500">Clinic</span>
                   </div>
@@ -382,12 +450,26 @@ export const SimpleSidebar: React.FC<SimpleSidebarProps> = ({ onToggle }) => {
                     variant="ghost"
                     className="w-full h-14 justify-start gap-4 text-gray-600 hover:bg-gray-100 border border-gray-200 min-w-0 px-4 py-4"
                   >
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-sm flex-shrink-0 text-white font-semibold text-base">
-                      JS
+                    <div className="relative h-10 w-10 rounded-full flex-shrink-0 overflow-hidden shadow-sm">
+                      {user?.avatarUrl ? (
+                        <Image
+                          src={user.avatarUrl}
+                          alt={`${user.firstName} ${user.lastName}`}
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-base">
+                          {user
+                            ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+                            : "?"}
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-base font-medium text-gray-900 truncate">
-                        Dr. John Smith
+                        {user ? `${user.firstName} ${user.lastName}` : "—"}
                       </p>
                     </div>
                   </Button>
@@ -406,7 +488,10 @@ export const SimpleSidebar: React.FC<SimpleSidebarProps> = ({ onToggle }) => {
                     {t("navigation.user.settings")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-gray-200" />
-                  <DropdownMenuItem className="flex items-center gap-3 px-4 py-3 text-base text-red-600 hover:bg-red-50 cursor-pointer">
+                  <DropdownMenuItem
+                    className="flex items-center gap-3 px-4 py-3 text-base text-red-600 hover:bg-red-50 cursor-pointer"
+                    onClick={logout}
+                  >
                     <LogOut className="h-5 w-5" />
                     {t("navigation.user.logout")}
                   </DropdownMenuItem>

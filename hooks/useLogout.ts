@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/lib/store/store";
 import { logout } from "@/lib/store/features/authSlice";
 import { AuthService } from "@/lib/api/auth.service";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/lib/utils/toast";
 import { t } from "i18next";
 
 /**
@@ -54,11 +54,7 @@ export const useLogout = () => {
       console.error("Logout error:", error);
 
       if (error?.name === "NetworkError") {
-        toast({
-          title: t("common.error"),
-          description: t("auth.logout.network-error"),
-          variant: "destructive",
-        });
+        toast.error(t("auth.logout.network-error"));
       } else if (
         error &&
         typeof error === "object" &&
@@ -66,18 +62,10 @@ export const useLogout = () => {
         error.status === 401
       ) {
         // Token already invalid, force cleanup
-        toast({
-          title: t("common.error"),
-          description: t("auth.logout.token-invalid"),
-          variant: "destructive",
-        });
+        toast.error(t("auth.logout.token-invalid"));
         forceLogout();
       } else {
-        toast({
-          title: t("common.error"),
-          description: t("auth.logout.failed"),
-          variant: "destructive",
-        });
+        toast.error(t("auth.logout.failed"));
       }
     },
     [forceLogout]
@@ -90,12 +78,6 @@ export const useLogout = () => {
     try {
       setIsLoggingOut(true);
 
-      // Show loading state
-      toast({
-        title: t("auth.logout.logging-out"),
-        description: t("auth.logout.please-wait"),
-      });
-
       // Call logout API
       const response = await AuthService.logout();
 
@@ -107,13 +89,11 @@ export const useLogout = () => {
         dispatch(logout());
 
         // Show success message
-        toast({
-          title: t("auth.logout.success"),
-          description: t("auth.logout.logged-out"),
-        });
+        toast.success(t("auth.logout.logged-out"));
 
-        // Redirect to login page using router
-        router.push("/signin");
+        // Redirect to login page — replace replaces history entry so
+        // the back button cannot return to a protected page after logout
+        router.replace("/signin");
       } else {
         throw new Error(response.message || "Logout failed");
       }
@@ -124,7 +104,7 @@ export const useLogout = () => {
       forceLogout();
 
       // Always redirect to signin page, even on error
-      router.push("/signin");
+      router.replace("/signin");
     } finally {
       setIsLoggingOut(false);
     }

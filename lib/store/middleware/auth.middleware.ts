@@ -6,7 +6,7 @@
  */
 
 import { Middleware } from "@reduxjs/toolkit";
-import { toast } from "keep-react";
+import { toast } from "@/lib/utils/toast";
 import { t } from "i18next";
 import { AuthError } from "@models/error.model";
 

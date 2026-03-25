@@ -67,14 +67,36 @@ export async function POST(request: NextRequest) {
         { status: response.status }
       );
     } catch (fetchError) {
-      console.error("Fetch error:", fetchError);
+      console.error("Fetch error during registration:", fetchError);
 
-      // For testing, if backend is unavailable
-      return NextResponse.json({
-        success: true,
-        message:
-          "Registration successful. Please check your email to verify your account.",
-      });
+      if (
+        fetchError instanceof Error &&
+        fetchError.message.includes("fetch failed")
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Backend service is unavailable",
+            error: {
+              code: "E503_SERVICE_UNAVAILABLE",
+              message: "Backend service is unavailable. Please try again later.",
+            },
+          },
+          { status: 503 }
+        );
+      }
+
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Internal server error",
+          error: {
+            code: "E500_INTERNAL_ERROR",
+            message: "An unexpected error occurred",
+          },
+        },
+        { status: 500 }
+      );
     }
   } catch (error) {
     console.error("Registration error:", error);

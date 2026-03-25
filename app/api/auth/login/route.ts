@@ -152,21 +152,22 @@ export async function POST(request: NextRequest) {
 
       // Check if backend set refresh token cookie
 
-      // Set access token in cookie for middleware (not HttpOnly)
+      // accessToken — httpOnly: Next.js middleware reads all cookies from
+      // HTTP request headers (including httpOnly). The httpOnly flag only
+      // prevents JavaScript (document.cookie) access, not server-side middleware.
       response.cookies.set("accessToken", accessToken, {
-        httpOnly: false, // Accessible in middleware
+        httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: 15 * 60, // 15 minutes (same as token expiry)
+        maxAge: 15 * 60,
         path: "/",
       });
 
-      // Set authentication flag
       response.cookies.set("is_authenticated", "true", {
-        httpOnly: false, // Accessible in middleware
+        httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60, // 7 days
+        maxAge: 7 * 24 * 60 * 60,
         path: "/",
       });
 

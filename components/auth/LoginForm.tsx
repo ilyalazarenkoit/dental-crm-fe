@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
-import { toast } from "keep-react";
+import { useAppDispatch } from "@/lib/store/store";
+import { toast } from "@/lib/utils/toast";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -19,19 +19,17 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { FullScreenLoader } from "@components/ui/full-screen-loader";
 import { AuthErrorDisplay } from "@components/auth/AuthErrorDisplay";
 import { setCredentials } from "@store/features/authSlice";
 import { AuthService } from "@lib/api/auth.service";
 import { handleApiResponse } from "@/lib/error-handler";
+import { ROUTES } from "@/constants/routes";
 
 // Login form validation schema
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(1, { message: "Password is required" }),
-  rememberMe: z.boolean().default(false),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -39,7 +37,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export const LoginForm = ({ callbackUrl }: { callbackUrl: string }) => {
   const { t } = useTranslation();
   const router = useRouter();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -50,7 +48,6 @@ export const LoginForm = ({ callbackUrl }: { callbackUrl: string }) => {
     defaultValues: {
       email: "",
       password: "",
-      rememberMe: false,
     },
     mode: "onTouched",
   });
@@ -77,7 +74,26 @@ export const LoginForm = ({ callbackUrl }: { callbackUrl: string }) => {
         );
 
         toast.success(t("auth.login-success"));
-        router.replace(decodeURI(callbackUrl));
+
+        // Only allow redirects to internal paths — prevents open redirect phishing.
+        // e.g. /signin?callbackUrl=https://evil.com must not redirect externally.
+        const safeRedirectUrl = (() => {
+          try {
+            const decoded = decodeURI(callbackUrl);
+            if (decoded.startsWith("/") && !decoded.startsWith("//")) {
+              return decoded;
+            }
+            const url = new URL(decoded, window.location.origin);
+            if (url.origin === window.location.origin) {
+              return url.pathname + url.search;
+            }
+            return ROUTES.home;
+          } catch {
+            return ROUTES.home;
+          }
+        })();
+
+        router.replace(safeRedirectUrl);
       } else {
         // Handle specific error cases
         if (response.error?.code === "E401_EMAIL_NOT_VERIFIED") {
@@ -185,35 +201,6 @@ export const LoginForm = ({ callbackUrl }: { callbackUrl: string }) => {
             )}
           />
 
-          {/* Remember Me */}
-          <FormField
-            control={form.control}
-            name="rememberMe"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <Label
-                    htmlFor="remember-me"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                  >
-                    {t("auth.remember-me", "Remember me")}
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    {t(
-                      "auth.remember-me-description",
-                      "Keep me signed in for 30 days"
-                    )}
-                  </p>
-                </div>
-              </FormItem>
-            )}
-          />
 
           {/* Submit Button */}
           <div className="pt-2">

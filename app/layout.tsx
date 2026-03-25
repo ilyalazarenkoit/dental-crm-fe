@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 
 import { Providers } from "@app/providers";
 import { AuthInitializer } from "@components/auth/AuthInitializer";
-import { ToastWrapper } from "keep-react";
+import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
 const inter = Inter({
@@ -32,21 +32,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} antialiased font-sans`}>
         <Providers>
           <AuthInitializer />
           {children}
-          <ToastWrapper
-            richColors={true}
-            toastOptions={{
-              classNames: {
-                title: "text-body-3 font-medium",
-                toast: "rounded-xl shadow-large",
-                description: "text-body-4 font-normal",
-              },
-            }}
-          />
+          <Toaster />
         </Providers>{" "}
       </body>
     </html>

@@ -143,14 +143,29 @@ export async function POST(request: NextRequest) {
         { status: 200 }
       );
 
+      // Refresh the accessToken cookie so middleware always sees a valid token.
+      // Without this, after 15 min a hard-reload (F5) would find no accessToken
+      // cookie, middleware would redirect to login even though the refresh token
+      // is still valid.
+      response.cookies.set("accessToken", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 15 * 60,
+        path: "/",
+      });
+
       // Update refresh token in HTTP-only cookie with rotation (if new token provided)
       if (newRefreshToken) {
+        // path must be "/" to match the cookie the backend set on login.
+        // Using "/auth/refresh" would create a second same-name cookie with a
+        // different path, causing ambiguity on the next refresh request.
         response.cookies.set("refreshToken", newRefreshToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
-          sameSite: "strict", // Enhanced CSRF protection
-          maxAge: 7 * 24 * 60 * 60, // 7 days
-          path: "/auth/refresh", // Restricted path for security
+          sameSite: "strict",
+          maxAge: 7 * 24 * 60 * 60,
+          path: "/",
         });
       }
 

@@ -3,10 +3,12 @@ import {
   AuthState,
   JWTPayload,
   LoginResponse,
+  MeOrganization,
+  MeUser,
   RefreshResponse,
 } from "@models/auth.model";
 import { jwtDecode } from "jwt-decode";
-import { toast } from "keep-react";
+import { toast } from "@/lib/utils/toast";
 import { t } from "i18next";
 
 /**
@@ -61,8 +63,9 @@ const isTokenValid = (token: string): boolean => {
       return false;
     }
 
-    // 3. Not before time check (nbf) - required
-    if (!decoded.nbf || decoded.nbf > currentTime) {
+    // 3. Not before time check (nbf) — optional per RFC 7519.
+    // Only reject the token if nbf is present AND its value is in the future.
+    if (decoded.nbf && decoded.nbf > currentTime) {
       return false;
     }
 
@@ -154,6 +157,7 @@ const initialState: AuthState = {
   loginAttempts: 0,
   isRefreshing: false,
   user: null,
+  organization: null,
 };
 
 export const authSlice = createSlice({
@@ -195,7 +199,7 @@ export const authSlice = createSlice({
             authFailureReason: "user_id_mismatch",
           };
           state.userId = null;
-          state.isAuthenticated = true;
+          state.isAuthenticated = false;
           state.loginAttempts += 1;
           toast.error(t("auth-errors.login-failed"));
           return;
@@ -246,7 +250,6 @@ export const authSlice = createSlice({
         loginAttempts: state.loginAttempts,
       });
       clearAuthTokens();
-      toast.info(t("auth.logedOut"));
     },
     reset: (state) => {
       Object.assign(state, {
@@ -299,16 +302,31 @@ export const authSlice = createSlice({
         state.isRefreshing = false;
       }
     },
+    /**
+     * Stores the result of GET /users/me.
+     * Called once on app init (providers.tsx) after isAuthenticated is true.
+     */
+    setUserMeData: (
+      state,
+      action: PayloadAction<{ user: MeUser; organization: MeOrganization }>
+    ) => {
+      const { user, organization } = action.payload;
+      state.organization = organization;
+      if (state.user) {
+        state.user.avatarUrl = user.avatarUrl;
+      }
+    },
     setRefreshing: (state, action: PayloadAction<boolean>) => {
       state.isRefreshing = action.payload;
     },
     initializeAuth: (state) => {
-      // In secure architecture, we don't store tokens in Redux
-      // Authentication state is managed by the backend via HttpOnly cookies
-      // This method is kept for backward compatibility but simplified
-      state.isAuthenticated = false;
-      state.userId = null;
-      state.user = null;
+      // Reset only ephemeral runtime data that should not survive a page reload.
+      // isAuthenticated / userId / user are restored from redux-persist (localStorage)
+      // and must NOT be cleared here — clearing them would cause a race condition
+      // where the persisted "logged-in" state is briefly wiped on every mount.
+      // accessToken is never persisted (see authTransform in store.ts).
+      state.accessToken = null;
+      state.isRefreshing = false;
       state.error = null;
     },
   },
@@ -323,6 +341,7 @@ export const {
   initializeAuth,
   refreshAccessToken,
   setRefreshing,
+  setUserMeData,
 } = authSlice.actions;
 
 // Type for selectors that works with persisted state
@@ -335,6 +354,8 @@ export const selectAccessToken = (state: AuthSelectorState) =>
 export const selectIsAuthenticated = (state: AuthSelectorState) =>
   state.auth.isAuthenticated;
 export const selectUser = (state: AuthSelectorState) => state.auth.user;
+export const selectOrganization = (state: AuthSelectorState) =>
+  state.auth.organization;
 export const selectAuthError = (state: AuthSelectorState) => state.auth.error;
 export const selectIsRefreshing = (state: AuthSelectorState) =>
   state.auth.isRefreshing;

@@ -1,40 +1,22 @@
 import type { NextConfig } from "next";
 
-/**
- * Comprehensive Security Configuration
- * Based on OWASP Top 10, NIST Cybersecurity Framework
- * Author: Senior Cybersecurity Engineer
- */
-
 const nextConfig: NextConfig = {
-  // Enable React strict mode for better development experience
   reactStrictMode: true,
+  poweredByHeader: false,
 
-  // Security Configuration
-  poweredByHeader: false, // Remove X-Powered-By header
-
-  // Compiler Configuration for security
   compiler: {
     removeConsole:
       process.env.NODE_ENV === "production"
-        ? {
-            exclude: ["error", "warn"],
-          }
+        ? { exclude: ["error", "warn"] }
         : false,
   },
 
-  // Webpack Configuration for security
   webpack: (config, { dev, isServer }) => {
-    // Security plugins for production
     if (!dev && !isServer) {
-      // Remove source maps in production for security
       config.devtool = false;
-
-      // Code minimization
       config.optimization.minimize = true;
     }
 
-    // Security headers for all builds
     config.resolve.fallback = {
       ...config.resolve.fallback,
       fs: false,
@@ -45,81 +27,49 @@ const nextConfig: NextConfig = {
     return config;
   },
 
-  // Environment Configuration
-  env: {
-    CUSTOM_KEY: process.env.CUSTOM_KEY,
-  },
-
-  // Trailing Slash Configuration
   trailingSlash: false,
 
-  // Image Optimization with security
   images: {
-    domains: ["api.dicebear.com"],
+    // TODO: narrow to actual CDN hostnames once they are known
+    remotePatterns: [
+      { protocol: "https", hostname: "**", pathname: "/**" },
+      { protocol: "http", hostname: "**", pathname: "/**" },
+    ],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     formats: ["image/webp", "image/avif"],
     minimumCacheTTL: 60,
-    dangerouslyAllowSVG: false, // Security for SVG
+    dangerouslyAllowSVG: false,
     contentSecurityPolicy:
       "default-src 'self'; script-src 'none'; style-src 'none'; sandbox;",
   },
 
-  // Experimental Features with security
+  // serverComponentsExternalPackages was moved to top-level in Next.js 15
+  serverExternalPackages: [],
+
   experimental: {
-    serverComponentsExternalPackages: [],
     optimizePackageImports: ["@radix-ui/react-icons"],
   },
 
-  // Output Configuration
   output: "standalone",
-
-  // Dist Directory
   distDir: ".next",
-
-  // Generate Etag
-  generateEtags: false, // Disable for security
-
-  // On Demand Entries
-  onDemandEntries: {
-    // Period (in ms) during which the page will be buffered
-    maxInactiveAge: 25 * 1000,
-    // Number of pages that should be buffered simultaneously
-    pagesBufferLength: 2,
-  },
-
-  // Compress Configuration
+  generateEtags: false,
   compress: true,
 
-  // Dev Indication
-  devIndicators: {
-    buildActivity: false,
-    buildActivityPosition: "bottom-right",
-  },
-
-  // Logging Configuration
   logging: {
     fetches: {
-      fullUrl: false, // Don't log full URLs for security
+      fullUrl: false,
     },
   },
 
-  // Configure redirects if needed
-  async redirects() {
-    return [];
-  },
-
-  // Comprehensive Security Headers Configuration
   async headers() {
     return [
       {
         source: "/(.*)",
         headers: [
-          // Content Security Policy (CSP) - main XSS protection
           {
             key: "Content-Security-Policy",
             value: [
-              // Basic directives
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://www.googletagmanager.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
@@ -132,40 +82,27 @@ const nextConfig: NextConfig = {
               "form-action 'self'",
               "frame-ancestors 'none'",
               "upgrade-insecure-requests",
-              // Additional security directives
               "worker-src 'self' blob:",
               "media-src 'self'",
               "manifest-src 'self'",
-              "prefetch-src 'self'",
-              "navigate-to 'self'",
             ].join("; "),
           },
-
-          // X-Frame-Options - clickjacking protection
           {
             key: "X-Frame-Options",
             value: "DENY",
           },
-
-          // X-Content-Type-Options - MIME sniffing protection
           {
             key: "X-Content-Type-Options",
             value: "nosniff",
           },
-
-          // X-XSS-Protection - additional XSS protection
           {
             key: "X-XSS-Protection",
             value: "1; mode=block",
           },
-
-          // Referrer-Policy - referrer information control
           {
             key: "Referrer-Policy",
             value: "strict-origin-when-cross-origin",
           },
-
-          // Permissions-Policy - browser API control
           {
             key: "Permissions-Policy",
             value: [
@@ -186,50 +123,34 @@ const nextConfig: NextConfig = {
               "midi=()",
             ].join(", "),
           },
-
-          // Strict-Transport-Security (HSTS) - forced HTTPS
           {
             key: "Strict-Transport-Security",
             value: "max-age=31536000; includeSubDomains; preload",
           },
-
-          // Cross-Origin-Embedder-Policy - resource isolation
           {
             key: "Cross-Origin-Embedder-Policy",
             value: "require-corp",
           },
-
-          // Cross-Origin-Opener-Policy - window isolation
           {
             key: "Cross-Origin-Opener-Policy",
             value: "same-origin",
           },
-
-          // Cross-Origin-Resource-Policy - resource access control
           {
             key: "Cross-Origin-Resource-Policy",
             value: "same-origin",
           },
-
-          // Origin-Agent-Cluster - agent isolation
           {
             key: "Origin-Agent-Cluster",
             value: "?1",
           },
-
-          // X-DNS-Prefetch-Control - DNS prefetch control
           {
             key: "X-DNS-Prefetch-Control",
             value: "off",
           },
-
-          // X-Download-Options - file download protection
           {
             key: "X-Download-Options",
             value: "noopen",
           },
-
-          // X-Permitted-Cross-Domain-Policies - cross-domain policy control
           {
             key: "X-Permitted-Cross-Domain-Policies",
             value: "none",
@@ -237,7 +158,6 @@ const nextConfig: NextConfig = {
         ],
       },
 
-      // Special settings for API routes
       {
         source: "/api/(.*)",
         headers: [
@@ -256,7 +176,6 @@ const nextConfig: NextConfig = {
         ],
       },
 
-      // Special settings for static files
       {
         source: "/_next/(.*)",
         headers: [

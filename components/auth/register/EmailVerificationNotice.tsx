@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Envelope, CheckCircle, SpinnerGap } from "phosphor-react";
 import { AuthService } from "@lib/api/auth.service";
-import { toast } from "keep-react";
+import { toast } from "@/lib/utils/toast";
 
 interface EmailVerificationNoticeProps {
   email: string;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
@@ -17,40 +17,46 @@ export default function VerifyEmailPage() {
   const token = searchParams.get("token");
   const [status, setStatus] = useState("loading");
   const [errorCode, setErrorCode] = useState("");
-
+  const hasVerifiedRef = useRef(false);
+  
   useEffect(() => {
-    if (!token) {
-      setStatus("error");
-      setErrorCode("E400_INVALID_TOKEN");
+    if (!token || hasVerifiedRef.current) {
+      if (!token) {
+        setStatus("error");
+        setErrorCode("E400_INVALID_TOKEN");
+      }
       return;
     }
-
+    const abortController = new AbortController();
     const verifyEmail = async () => {
       try {
         const response = await fetch(`/api/auth/verify-email?token=${token}`, {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
+          signal: abortController.signal,
         });
-
         const data = await response.json();
-
         if (data.success) {
+          hasVerifiedRef.current = true;
           setStatus("success");
         } else {
           setStatus("error");
           setErrorCode(data.error?.code || "E500_SERVER_ERROR");
         }
       } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          return;
+        }
         setStatus("error");
         setErrorCode("E500_SERVER_ERROR");
         console.error("Error verifying email:", error);
       }
     };
-
     verifyEmail();
-  }, [token, t]);
+    return () => {
+      abortController.abort();
+    };
+  }, [token]);
 
   // Function to get localized error message
   const getErrorMessage = () => {

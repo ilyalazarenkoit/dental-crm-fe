@@ -2,42 +2,56 @@
 
 import "@/lib/i18n/i18n";
 import i18n from "@/lib/i18n/i18n";
-import { LoadScript } from "@react-google-maps/api";
 import { persistor, store, useAppDispatch } from "@store/store";
+import {
+  selectIsAuthenticated,
+  setUserMeData,
+} from "@store/features/authSlice";
+import { UsersService } from "@/lib/api/users.service";
 import { ThemeProvider } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { I18nextProvider } from "react-i18next";
 import { Provider as ReduxProvider } from "react-redux";
+import { useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
+// Task 7: use reactive useSelector instead of store.getState() snapshot.
+// store.getState() is not reactive — changes to isAuthenticated after first
+// render would never trigger a re-run of the useEffect.
 const ThemeAndLanguageInitializer = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const isAuthenticated = store.getState().auth.isAuthenticated;
+  const isAuthenticated = useSelector(selectIsAuthenticated);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      /** Load app settings/options/.. */
-    }
+    if (!isAuthenticated) return;
+
+    UsersService.getMe()
+      .then((response) => {
+       
+        dispatch(setUserMeData(response.data));
+      })
+      .catch((err) => {
+        console.error("[users/me] error:", err);
+      });
   }, [dispatch, isAuthenticated]);
 
   return children;
 };
 
+// Task 2: Removed mounted/useState/useEffect guard that returned null before
+// first client render. That pattern caused a full white flash on every page
+// load and disabled SSR completely.
+// ThemeProvider handles its own hydration safely via suppressHydrationWarning
+// on <html> (set in layout.tsx).
+//
+// Task 3: Removed <LoadScript> (Google Maps) from global providers.
+// ~200KB Google Maps JS was loaded on every page including login/register.
+// LoadScript must be placed in the specific component that actually needs a map.
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
-
   return (
     <ReduxProvider store={store}>
       <PersistGate loading={null} persistor={persistor}>
@@ -48,13 +62,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             disableTransitionOnChange
           >
             <ThemeAndLanguageInitializer>
-              <LoadScript
-                googleMapsApiKey={
-                  process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
-                }
-              >
-                {children}
-              </LoadScript>
+              {children}
             </ThemeAndLanguageInitializer>
           </ThemeProvider>
         </I18nextProvider>
