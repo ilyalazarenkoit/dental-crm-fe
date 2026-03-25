@@ -36,7 +36,7 @@ class HttpClient {
     // Get access token from Redux state (if not in memory)
     if (!this.accessToken) {
       const state = store.getState();
-      this.accessToken = state.auth.accessToken;
+      this.accessToken = state.auth?.accessToken ?? null;
     }
 
     // Add Authorization header if we have access token

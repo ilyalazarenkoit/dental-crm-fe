@@ -3,7 +3,7 @@
  * @remarks Redux store configuration with persistence and middleware setup
  */
 
-import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import { combineReducers, configureStore, type Reducer } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { authReducer } from "@store/features/authSlice";
 import { AuthState } from "@/models/auth.model";
@@ -68,7 +68,11 @@ const persistConfig = {
  * @remarks Persisted reducer wrapping the root reducer
  * Handles saving and rehydrating the specified state slices
  */
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+type RootReducerState = ReturnType<typeof rootReducer>;
+const persistedReducer = persistReducer<RootReducerState>(
+  persistConfig,
+  rootReducer as Reducer<RootReducerState>
+);
 
 /**
  * @remarks Redux store instance with configured reducers and middleware

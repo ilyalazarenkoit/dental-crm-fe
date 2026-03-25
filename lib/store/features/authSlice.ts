@@ -12,39 +12,6 @@ import { toast } from "@/lib/utils/toast";
 import { t } from "i18next";
 
 /**
- * Secure token cleanup with complete removal of all traces
- * Complies with NIST SP 800-53 standards
- * Note: In secure architecture, tokens are managed by backend via HttpOnly cookies
- */
-const clearAuthTokens = () => {
-  // Clear all authentication cookies for backward compatibility
-  const cookiesToClear = [
-    "auth_token",
-    "refresh_token",
-    "refreshToken",
-    "session_type",
-    "accessToken", // Legacy
-    "session", // Legacy
-  ];
-
-  const clearCookie = (name: string, path: string, domain?: string) => {
-    const domainPart = domain ? `; domain=${domain}` : "";
-    document.cookie = `${name}=; path=${path}; expires=Thu, 01 Jan 1970 00:00:00 GMT${domainPart}`;
-  };
-
-  cookiesToClear.forEach((cookieName) => {
-    // Clear for root path
-    clearCookie(cookieName, "/");
-
-    // Clear for current domain and subdomain
-    const domains = [window.location.hostname, `.${window.location.hostname}`];
-    domains.forEach((domain) => {
-      clearCookie(cookieName, "/", domain);
-    });
-  });
-};
-
-/**
  * Enhanced JWT token validation using cybersecurity best practices
  * Updated for new backend JWT format
  * Based on RFC 7519, OWASP JWT Security Cheat Sheet
@@ -249,14 +216,12 @@ export const authSlice = createSlice({
         ...initialState,
         loginAttempts: state.loginAttempts,
       });
-      clearAuthTokens();
     },
     reset: (state) => {
       Object.assign(state, {
         ...initialState,
         loginAttempts: state.loginAttempts,
       });
-      clearAuthTokens();
     },
     clearErrors: (state) => {
       state.error = null;

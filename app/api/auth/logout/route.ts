@@ -56,6 +56,15 @@ export async function POST(request: NextRequest) {
       path: "/",
     });
 
+    // Clear refresh token — must use same flags as when it was set in login/route.ts
+    response.cookies.set("refreshToken", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      expires: new Date(0),
+      path: "/",
+    });
+
     // Clear legacy cookies for backward compatibility
     const legacyCookies = [
       "auth_token",

@@ -64,7 +64,6 @@
     "cmdk": "^1.1.1",
     "commitlint": "^19.8.0",
     "date-fns": "^4.1.0",
-    "date-fns-tz": "^3.3.0",
     "dotenv": "^16.4.7",
     "embla-carousel-autoplay": "^8.5.2",
     "embla-carousel-react": "^8.6.0",

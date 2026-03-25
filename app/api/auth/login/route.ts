@@ -148,10 +148,6 @@ export async function POST(request: NextRequest) {
         { status: 200 }
       );
 
-      // Debug: Log backend response headers
-
-      // Check if backend set refresh token cookie
-
       // accessToken — httpOnly: Next.js middleware reads all cookies from
       // HTTP request headers (including httpOnly). The httpOnly flag only
       // prevents JavaScript (document.cookie) access, not server-side middleware.
@@ -170,6 +166,37 @@ export async function POST(request: NextRequest) {
         maxAge: 7 * 24 * 60 * 60,
         path: "/",
       });
+
+      // Forward refreshToken from backend Set-Cookie header to browser.
+      // getSetCookie() is Node.js 18+ standard — returns each Set-Cookie value
+      // as a separate string without the multi-value ambiguity of get("set-cookie").
+      const headersWithGetSetCookie = backendResponse.headers as unknown as {
+        getSetCookie?: () => string[];
+      };
+      const setCookieHeaders: string[] =
+        typeof headersWithGetSetCookie.getSetCookie === "function"
+          ? headersWithGetSetCookie.getSetCookie()
+          : [backendResponse.headers.get("set-cookie") ?? ""].filter(Boolean);
+
+      const refreshCookieStr = setCookieHeaders.find((c) =>
+        c.toLowerCase().startsWith("refreshtoken=")
+      );
+
+      if (refreshCookieStr) {
+        // Extract value only: "refreshToken=VALUE; HttpOnly; ..." → VALUE
+        const rawValue = refreshCookieStr.split(";")[0]; // "refreshToken=VALUE"
+        const tokenValue = rawValue.split("=").slice(1).join("="); // VALUE
+
+        if (tokenValue) {
+          response.cookies.set("refreshToken", tokenValue, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60, // 7 days
+            path: "/",
+          });
+        }
+      }
 
       return response;
     } catch (fetchError) {
