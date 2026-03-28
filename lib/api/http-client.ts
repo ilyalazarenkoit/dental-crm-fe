@@ -74,6 +74,14 @@ class HttpClient {
       } catch {
         // Refresh failed - logout user
         this.accessToken = null;
+        try {
+          await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "include",
+          });
+        } catch {
+          // Best-effort: even if the logout call fails, we still clear local state.
+        }
         store.dispatch(logout());
         throw new Error("Session expired. Please login again.");
       }
@@ -129,7 +137,7 @@ class HttpClient {
       refreshAccessToken({
         accessToken: data.accessToken,
         user: data.user,
-      })
+      }),
     );
 
     return data.accessToken;

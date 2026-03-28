@@ -14,7 +14,13 @@ export default function SignIn() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
 
-  const callbackUrl = searchParams.get("callbackUrl") || ROUTES.home;
+  // Validate callbackUrl to prevent open redirect attacks.
+  // Only allow relative paths (start with /) — never external URLs.
+  const rawCallback = searchParams.get("callbackUrl") ?? "";
+  const callbackUrl =
+    rawCallback.startsWith("/") && !rawCallback.startsWith("//")
+      ? rawCallback
+      : ROUTES.home;
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">

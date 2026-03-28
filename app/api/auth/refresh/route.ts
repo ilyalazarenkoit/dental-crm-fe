@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { extractRefreshTokenFromBackendSetCookie } from "@/lib/api/extract-refresh-token-from-set-cookie";
 
 /**
  * POST /api/auth/refresh
@@ -7,8 +8,8 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     // Get refresh token from HTTP-only cookie
-    const refreshToken = request.cookies.get("refreshToken")?.value;
 
+    const refreshToken = request.cookies.get("refreshToken")?.value;
     if (!refreshToken) {
       return NextResponse.json(
         {
@@ -49,9 +50,8 @@ export async function POST(request: NextRequest) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${refreshToken}`,
+          Cookie: `refreshToken=${encodeURIComponent(refreshToken)}`,
         },
-        credentials: "include",
       });
 
       if (!backendResponse.ok) {
@@ -115,7 +115,14 @@ export async function POST(request: NextRequest) {
 
       // Extract data from the correct structure
       const accessToken = data.data?.accessToken || data.accessToken;
-      const newRefreshToken = data.data?.refreshToken || data.refreshToken;
+      const newRefreshTokenFromBody =
+        data.data?.refreshToken || data.refreshToken;
+      // Backend may rotate refresh token via Set-Cookie only (same as login).
+      // If we only read JSON, the browser keeps the old cookie → next refresh → 401.
+      const newRefreshTokenFromCookie =
+        extractRefreshTokenFromBackendSetCookie(backendResponse);
+      const newRefreshToken =
+        newRefreshTokenFromBody || newRefreshTokenFromCookie;
       const user = data.data?.user || data.user;
 
       if (!accessToken || !user) {
@@ -155,11 +162,8 @@ export async function POST(request: NextRequest) {
         path: "/",
       });
 
-      // Update refresh token in HTTP-only cookie with rotation (if new token provided)
+      // Update refresh token cookie when backend rotated it (JSON and/or Set-Cookie).
       if (newRefreshToken) {
-        // path must be "/" to match the cookie the backend set on login.
-        // Using "/auth/refresh" would create a second same-name cookie with a
-        // different path, causing ambiguity on the next refresh request.
         response.cookies.set("refreshToken", newRefreshToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",

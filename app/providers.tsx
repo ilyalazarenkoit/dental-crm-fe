@@ -14,12 +14,8 @@ import { I18nextProvider } from "react-i18next";
 import { Provider as ReduxProvider } from "react-redux";
 import { useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { useRouter } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
 
-// Task 7: use reactive useSelector instead of store.getState() snapshot.
-// store.getState() is not reactive — changes to isAuthenticated after first
-// render would never trigger a re-run of the useEffect.
 const ThemeAndLanguageInitializer = ({
   children,
 }: {
@@ -27,9 +23,6 @@ const ThemeAndLanguageInitializer = ({
 }) => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const dispatch = useAppDispatch();
-  const router = useRouter();
-  // Track previous value to detect true→false transition only.
-  // This prevents redirecting public pages that start with isAuthenticated=false.
   const prevIsAuthRef = useRef<boolean | null>(null);
 
   useEffect(() => {
@@ -40,31 +33,39 @@ const ThemeAndLanguageInitializer = ({
         dispatch(setUserMeData(response.data));
       })
       .catch((err) => {
+        // httpClient already dispatches logout() + clears cookies when the
+        // refresh token is invalid (see http-client.ts catch block).
+        // Do NOT dispatch logout() here — any transient error (500, network
+        // blip, timeout) would otherwise log the user out unnecessarily.
         console.error("[users/me] error:", err);
       });
   }, [dispatch, isAuthenticated]);
 
-  // Redirect to signin only when session is lost mid-session (true → false).
-  // httpClient dispatches logout() on 401 from refresh — this effect reacts.
+  // Session expiry: httpClient dispatches logout() on 401 → isAuthenticated: true → false.
+  // Use window.location (full reload) so middleware re-checks cookies and
+  // bfcache entries for protected pages are cleared.
   useEffect(() => {
     if (prevIsAuthRef.current === true && !isAuthenticated) {
-      router.replace(ROUTES.signin);
+      window.location.replace(ROUTES.signin);
     }
     prevIsAuthRef.current = isAuthenticated;
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated]);
+
+  // bfcache guard: browser Back button restores pages without HTTP requests,
+  // bypassing middleware. pageshow fires with e.persisted=true on bfcache restore.
+  useEffect(() => {
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted && !isAuthenticated) {
+        window.location.replace(ROUTES.signin);
+      }
+    };
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, [isAuthenticated]);
 
   return children;
 };
 
-// Task 2: Removed mounted/useState/useEffect guard that returned null before
-// first client render. That pattern caused a full white flash on every page
-// load and disabled SSR completely.
-// ThemeProvider handles its own hydration safely via suppressHydrationWarning
-// on <html> (set in layout.tsx).
-//
-// Task 3: Removed <LoadScript> (Google Maps) from global providers.
-// ~200KB Google Maps JS was loaded on every page including login/register.
-// LoadScript must be placed in the specific component that actually needs a map.
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ReduxProvider store={store}>

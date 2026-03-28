@@ -3,6 +3,8 @@ import {
   Patient,
   PatientListResponse,
   PatientsQueryParams,
+  CreatePatientDto,
+  CreatePatientResponse,
 } from "@/models/patient.model";
 
 const endpoint = "/api/patients";
@@ -42,6 +44,32 @@ export const PatientsService = {
 
     return data as PatientListResponse;
   },
+
+  async createPatient(dto: CreatePatientDto): Promise<CreatePatientResponse> {
+
+  
+    const response = await httpClient.request(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dto),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      const message = Array.isArray(data?.message)
+        ? data.message.join(", ")
+        : data?.message ?? "Failed to create patient";
+      throw new Error(message);
+    }
+
+    return data as CreatePatientResponse;
+  },
 };
 
-export type { Patient, PatientListResponse, PatientsQueryParams };
+export type {
+  Patient,
+  PatientListResponse,
+  PatientsQueryParams,
+  CreatePatientDto,
+  CreatePatientResponse,
+};

@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/lib/store/store";
 import { logout } from "@/lib/store/features/authSlice";
 import { AuthService } from "@/lib/api/auth.service";
@@ -14,16 +13,15 @@ import { ROUTES } from "@/constants/routes";
  */
 export const useLogout = () => {
   const dispatch = useAppDispatch();
-  const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   /**
    * Force logout: clears Redux state without waiting for the API.
-   * Used when the API call fails but we still need to clean up locally.
-   * providers.tsx will detect isAuthenticated=false and redirect to /signin.
+   * providers.tsx pageshow listener + session-expiry effect will redirect.
    */
   const forceLogout = useCallback(() => {
     dispatch(logout());
+    window.location.replace(ROUTES.signin);
   }, [dispatch]);
 
   /**
@@ -52,7 +50,9 @@ export const useLogout = () => {
   /**
    * Main logout function.
    * Calls the BFF logout route which clears all httpOnly cookies server-side,
-   * then clears Redux state and redirects to signin.
+   * then clears Redux state and performs a full-page redirect to signin.
+   * window.location.replace (not router.replace) is intentional:
+   * full reload clears bfcache so Back button cannot restore protected pages.
    */
   const performLogout = useCallback(async () => {
     try {
@@ -63,19 +63,17 @@ export const useLogout = () => {
       if (response.success) {
         dispatch(logout());
         toast.success(t("auth.logout.logged-out"));
-        router.replace(ROUTES.signin);
+        window.location.replace(ROUTES.signin);
       } else {
         throw new Error(response.message || "Logout failed");
       }
     } catch (error) {
       handleLogoutError(error as Error | { status?: number; name?: string });
-      // Even if API fails, clear local state and redirect
       forceLogout();
-      router.replace(ROUTES.signin);
     } finally {
       setIsLoggingOut(false);
     }
-  }, [dispatch, router, handleLogoutError, forceLogout]);
+  }, [dispatch, handleLogoutError, forceLogout]);
 
   return {
     logout: performLogout,

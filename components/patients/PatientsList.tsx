@@ -3,11 +3,14 @@
 import { Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import type { Patient } from "@/models/patient.model";
+
 interface PatientsListProps {
+  patients?: Patient[];
   isLoading?: boolean;
 }
 
-export const PatientsList = ({ isLoading = false }: PatientsListProps) => {
+export const PatientsList = ({ patients = [], isLoading = false }: PatientsListProps) => {
   if (isLoading) {
     return (
       <div className="space-y-3">

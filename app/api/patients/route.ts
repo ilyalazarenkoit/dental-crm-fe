@@ -2,6 +2,72 @@ import { NextRequest, NextResponse } from "next/server";
 
 const endpoint = "/patients";
 
+export async function POST(request: NextRequest) {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  if (!apiUrl) {
+    return NextResponse.json(
+      { success: false, message: "Server configuration error" },
+      { status: 500 }
+    );
+  }
+
+  const incomingAuthorization = request.headers.get("authorization");
+  const cookieToken = request.cookies.get("accessToken")?.value;
+  const authorizationHeader = incomingAuthorization
+     ? incomingAuthorization
+     : cookieToken
+       ? `Bearer ${cookieToken}`
+       : undefined;
+
+
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { success: false, message: "Invalid request body" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const backendResponse = await fetch(`${apiUrl}${endpoint}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(authorizationHeader ? { Authorization: authorizationHeader } : {}),
+      },
+      body: JSON.stringify(body),
+      cache: "no-store",
+    });
+
+    const contentType = backendResponse.headers.get("content-type");
+    const data = contentType?.includes("application/json")
+      ? await backendResponse.json()
+      : { message: `Backend error ${backendResponse.status}` };
+
+    if (!backendResponse.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: data?.message ?? "Failed to create patient",
+        },
+        { status: backendResponse.status }
+      );
+    }
+
+    return NextResponse.json(data, { status: 201 });
+  } catch (error) {
+    console.error("Create patient error:", error);
+    return NextResponse.json(
+      { success: false, message: "Backend service unavailable" },
+      { status: 503 }
+    );
+  }
+}
+
 export async function GET(request: NextRequest) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 

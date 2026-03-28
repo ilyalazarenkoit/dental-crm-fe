@@ -28,6 +28,29 @@ export interface PatientListResponse {
   totalPages: number;
 }
 
+export interface CreatePatientDto {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  gender?: "male" | "female" | "other";
+  phone?: string;
+  email?: string;
+  addressStreet?: string;
+  addressCity?: string;
+  addressZip?: string;
+  addressCountry?: string;
+  tags?: string[];
+}
+
+export interface CreatePatientResponse {
+  success: boolean;
+  data: Patient;
+  meta: {
+    timestamp: string;
+    path: string;
+  };
+}
+
 export interface PatientsQueryParams {
   page?: number;
   limit?: number;

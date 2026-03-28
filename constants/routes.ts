@@ -13,7 +13,7 @@ enum ROUTES {
   // sidebar routes
   home = "/home",
   scheduling = "/scheduling",
-  patients = "/contacts",
+  patients = "/patients",
   cards = "/cards",
 
   management = "/management",

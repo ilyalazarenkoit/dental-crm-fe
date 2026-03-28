@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import { Providers } from "@app/providers";
-import { AuthInitializer } from "@components/auth/AuthInitializer";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
@@ -35,7 +34,6 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} antialiased font-sans`}>
         <Providers>
-          <AuthInitializer />
           {children}
           <Toaster />
         </Providers>{" "}

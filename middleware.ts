@@ -110,6 +110,6 @@ export const config = {
      * - API routes that handle their own auth
      * - Favicon and other browser files
      */
-    "/((?!_next/static|_next/image|favicon.ico|images|static|api/auth).*)",
+    "/((?!_next/static|_next/image|favicon.ico|images|static|api/).*)",
   ],
 };
