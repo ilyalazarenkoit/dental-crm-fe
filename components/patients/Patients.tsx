@@ -6,7 +6,7 @@ import type { Patient } from "@/models/patient.model";
 import { PatientsFilter } from "./PatientsFilter";
 import { PatientsList } from "./PatientsList";
 import { CreatePatientModal } from "./createPatient/CreatePatientModal";
-import { CrmPageHeader } from "@/components/navigation";
+import { Header } from "@/components/navigation";
 
 export const Patients: FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -33,10 +33,9 @@ export const Patients: FC = () => {
   }, []);
 
   return (
-    <div className="px-6">
-      <CrmPageHeader
+    <div>
+      <Header
         title="Patients"
-        description="Browse your patient base, refine the list, and add new records without leaving the CRM flow."
         actions={<CreatePatientModal onPatientCreated={handlePatientCreated} />}
       />
       <PatientsFilter />

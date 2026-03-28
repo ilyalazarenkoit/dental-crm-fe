@@ -4,7 +4,7 @@ export { DashboardLayout } from "./DashboardLayout";
 export { SimpleSidebar } from "./SimpleSidebar";
 export { SimpleDashboardLayout } from "./SimpleDashboardLayout";
 export { MobileHeader } from "./MobileHeader";
-export { CrmPageHeader } from "../header/Header";
+export { Header } from "../header/Header";
 
 // Default exports (renamed to avoid conflicts)
 export { default as SidebarDefault } from "./Sidebar";
@@ -12,4 +12,4 @@ export { default as DashboardLayoutDefault } from "./DashboardLayout";
 export { default as SimpleSidebarDefault } from "./SimpleSidebar";
 export { default as SimpleDashboardLayoutDefault } from "./SimpleDashboardLayout";
 export { default as MobileHeaderDefault } from "./MobileHeader";
-export { default as CrmPageHeaderDefault } from "../header/Header";
+export { default as HeaderDefault } from "../header/Header";

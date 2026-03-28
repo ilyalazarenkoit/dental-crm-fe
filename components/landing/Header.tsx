@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { ROUTES } from "@constants/routes";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
-export const Header = () => {
+export const LandingHeader = () => {
   const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);

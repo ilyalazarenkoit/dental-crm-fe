@@ -69,7 +69,7 @@ export const SimpleDashboardLayout: React.FC<SimpleDashboardLayoutProps> = ({
         <div className="lg:hidden h-20" />
 
         {/* Content */}
-        <div className="p-4 lg:p-8">{children}</div>
+        <div className="p-4 lg:p-8 lg:pt-4">{children}</div>
       </main>
     </div>
   );

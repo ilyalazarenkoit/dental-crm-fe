@@ -15,7 +15,7 @@ import {
 } from "phosphor-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { CrmPageHeader } from "@/components/navigation";
+import { Header } from "@/components/navigation";
 
 interface AnalyticsData {
   totalPatients: number;
@@ -42,22 +42,15 @@ export const HomePage = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white p-6">
+    <div className="min-h-screen">
+      <Header title={t("homepage.welcome", "Welcome back!")} />
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="mb-8"
-        >
-          <CrmPageHeader
-            title={t("homepage.welcome", "Welcome back!")}
-            description={t(
-              "homepage.subtitle",
-              "Here's what's happening with your practice today"
-            )}
-          />
-        </motion.div>
+        ></motion.div>
 
         {/* Key Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -181,7 +174,7 @@ export const HomePage = () => {
                     <span className="text-sm font-medium text-gray-700">
                       {t(
                         "homepage.appointment-completion",
-                        "Appointment Completion"
+                        "Appointment Completion",
                       )}
                     </span>
                     <span className="text-sm font-semibold text-gray-900">
@@ -222,7 +215,7 @@ export const HomePage = () => {
                         (analyticsData.completedTasks /
                           (analyticsData.completedTasks +
                             analyticsData.pendingTasks)) *
-                          100
+                          100,
                       )}
                       %
                     </span>
@@ -263,13 +256,13 @@ export const HomePage = () => {
                       <p className="text-sm font-medium text-gray-900">
                         {t(
                           "homepage.appointment-completed",
-                          "Appointment completed"
+                          "Appointment completed",
                         )}
                       </p>
                       <p className="text-xs text-gray-500">
                         {t(
                           "homepage.dr-smith-patient-john",
-                          "Dr. Smith - Patient John D."
+                          "Dr. Smith - Patient John D.",
                         )}
                       </p>
                     </div>
@@ -282,7 +275,7 @@ export const HomePage = () => {
                       <p className="text-sm font-medium text-gray-900">
                         {t(
                           "homepage.new-patient-registered",
-                          "New patient registered"
+                          "New patient registered",
                         )}
                       </p>
                       <p className="text-xs text-gray-500">
@@ -298,7 +291,7 @@ export const HomePage = () => {
                       <p className="text-sm font-medium text-gray-900">
                         {t(
                           "homepage.appointment-reminder",
-                          "Appointment reminder sent"
+                          "Appointment reminder sent",
                         )}
                       </p>
                       <p className="text-xs text-gray-500">
