@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { SimpleSidebar } from "./SimpleSidebar";
+import { Sidebar } from "./Sidebar";
 import { MobileHeader } from "./MobileHeader";
 import { cn } from "@/lib/utils";
 
@@ -47,11 +47,12 @@ export const SimpleDashboardLayout: React.FC<SimpleDashboardLayoutProps> = ({
         onToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       />
 
-      {/* Sidebar — receives external mobile open state so MobileHeader controls it */}
-      <SimpleSidebar
+      {/* Sidebar — same as DashboardLayout: controlled expand + mobile sheet */}
+      <Sidebar
         onToggle={handleSidebarToggle}
         isMobileOpen={isMobileMenuOpen}
         setIsMobileOpen={setIsMobileMenuOpen}
+        isExpanded={sidebarExpanded}
       />
 
       {/* Main content */}
