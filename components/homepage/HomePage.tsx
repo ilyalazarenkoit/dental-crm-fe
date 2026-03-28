@@ -15,6 +15,7 @@ import {
 } from "phosphor-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { CrmPageHeader } from "@/components/navigation";
 
 interface AnalyticsData {
   totalPatients: number;
@@ -43,22 +44,19 @@ export const HomePage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            {t("homepage.welcome", "Welcome back!")}
-          </h1>
-          <p className="text-lg text-gray-600">
-            {t(
+          <CrmPageHeader
+            title={t("homepage.welcome", "Welcome back!")}
+            description={t(
               "homepage.subtitle",
               "Here's what's happening with your practice today"
             )}
-          </p>
+          />
         </motion.div>
 
         {/* Key Metrics Grid */}
